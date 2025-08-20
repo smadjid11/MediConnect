@@ -21,7 +21,7 @@ DEBUG = env.bool('DEBUG', default=False)
 ALLOWED_HOSTS = ['localhost', '192.168.1.4', 'mediconnect-914s.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
-    'mediconnect-914s.onrender.com',
+    'https://mediconnect-914s.onrender.com',
 ]
 
 
