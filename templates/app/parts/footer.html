@@ -1,0 +1,140 @@
+{% block content %}
+    <style>
+        /* Footer */
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 48px 0 24px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 32px;
+        }
+
+        .footer-brand .nav-brand .logo {
+            background: #2563eb;
+        }
+
+        .footer-brand .brand-name {
+            color: white;
+        }
+
+        .footer-description {
+            color: #9ca3af;
+            margin-top: 16px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-list {
+            list-style: none;
+        }
+
+        .footer-list li {
+            margin-bottom: 8px;
+        }
+
+        .footer-list a {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-list a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-link {
+            background: #374151;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 24px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: #9ca3af;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+    </style>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="nav-brand">
+                        <div class="logo">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <span class="brand-name">MediConnect</span>
+                    </div>
+                    <p class="footer-description">
+                        Connect with certified doctors instantly through secure messaging. 
+                        Get professional medical advice from the comfort of your home, 24/7.
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h3 class="footer-title">Main Features</h3>
+                    <ul class="footer-list">
+                        <li><a>Fast </a></li>
+                        <li><a>Secure Messages</a></li>
+                        <li><a>Responsive</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-social">
+                    <h3 class="footer-title">Follow Us</h3>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/smadjid11" class="social-link" target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter" target="_blank"></i></a>
+                        <a href="https://www.instagram.com/smadjid11" class="social-link" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/in/smadjid11/" class="social-link" target="_blank"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 MediConnect – All rights reserved</p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}

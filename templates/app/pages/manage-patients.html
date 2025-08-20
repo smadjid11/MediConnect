@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    <title>MediConnect - Manage Patients</title>
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo {
+            background: #2563eb;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .nav-link.active {
+            color: #2563eb;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger {
+            width: 25px;
+            height: 3px;
+            background: #374151;
+            transition: all 0.3s;
+        }
+
+        /* Main Section */
+        .main-section {
+            padding: 20px 0 80px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        /* Patients Grid */
+        .patients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .patient-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .patient-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .patient-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .patient-info {
+            padding: 24px;
+        }
+
+        .patient-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .patient-details {
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .patient-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .patient-status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .patient-status.inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .patient-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-delete {
+            flex: 1;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Delete Confirmation Modal */
+        .confirm-modal {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .confirm-modal {
+            transform: scale(1);
+        }
+
+        .confirm-header {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .confirm-icon {
+            width: 60px;
+            height: 60px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: #ef4444;
+            font-size: 24px;
+        }
+
+        .confirm-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .confirm-message {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-confirm-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm-delete:hover {
+            background: #dc2626;
+        }
+
+        .btn-confirm-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            color: #d1d5db;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .empty-message {
+            margin-bottom: 24px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: white;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 40px;
+                gap: 24px;
+                transition: left 0.3s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px);
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px);
+            }
+
+            .main-section {
+                padding: 20px 0 60px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .patients-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .patient-actions {
+                flex-direction: column;
+            }
+
+            .confirm-actions {
+                flex-direction: column;
+            }
+
+            .btn-confirm-delete, .btn-confirm-cancel {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .patient-info {
+                padding: 20px;
+            }
+
+            .confirm-modal {
+                width: 95%;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
+    <!-- Main Section -->
+    <section class="main-section">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Manage Patients</h1>
+                <p class="page-subtitle">View and manage patient profiles in the system</p>
+            </div>
+
+            <div class="patients-grid" id="patientsGrid">
+                {% for patient_profile in patients %}
+                    <!-- Patient Card -->
+                    <div class="patient-card" data-id="{{ patient_profile.user.id }}" data-name="{{ patient_profile.user.first_name }}">
+                        {% if patient_profile.avatar %}
+                            <img src="{{ patient_profile.avatar.url }}" alt="{{ patient_profile.user.first_name }}" class="patient-image">
+                        {% else %}
+                            <img src="{% static 'images/default-patient-pfp.jpg' %}" alt="{{ patient_profile.user.first_name }}" class="patient-image">
+                        {% endif %}
+                        <div class="patient-info">
+                            <h3 class="patient-name">{{ patient_profile.user.first_name }}</h3>
+                            <p class="patient-details">Birth Date: {{ patient_profile.birth_date }}</p>
+                            {% if patient_profile.last_online_at %}
+                                <p class="patient-details" id="lastOnline">Last Online: {{ patient_profile.last_online_at|timesince }}</p>
+                                <div class="patient-status inactive">
+                                    <i class="fas fa-circle"></i>
+                                    Offline
+                                </div>
+                            {% else %}
+                                <div class="patient-status active">
+                                    <i class="fas fa-circle"></i>
+                                    Online
+                                </div>
+                            {% endif %}
+                            
+                            <div class="patient-actions">
+                                <button class="btn-delete" onclick="deletePatient({{ patient_profile.user.id }}, '{{ patient_profile.user.first_name }}')">
+                                    <i class="fas fa-trash"></i>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Delete Confirmation Modal -->
+    <form method="POST" class="modal-overlay" id="deleteModal">
+        {% csrf_token %}
+        <div class="confirm-modal">
+            <div class="confirm-header">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="confirm-title">Delete Patient?</h3>
+                <p class="confirm-message">Are you sure you want to delete <strong id="patientToDelete">this patient</strong>? This action cannot be undone.</p>
+                <div class="confirm-actions">
+                    <button class="btn-confirm-cancel" onclick="closeDeleteModal(event)">Cancel</button>
+                    <button class="btn-confirm-delete" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        let patientToDeleteId = null;
+        let deleteModal = document.querySelector("#deleteModal");
+
+        // Delete Patient Function
+        function deletePatient(id, name) {
+            patientToDeleteId = id;
+            let patientUserId = deleteModal.querySelector("#patientUserId");
+            if(!patientUserId){
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'patient_user_id';
+                input.value = patientToDeleteId;
+                input.id = 'patientUserId';
+                deleteModal.prepend(input);
+            }
+            else{
+                patientUserId.value = patientToDeleteId;
+            }
+            document.getElementById('patientToDelete').textContent = name;
+            showDeleteModal();
+        }
+
+        // Show/Hide Delete Modal
+        function showDeleteModal() {
+            document.getElementById('deleteModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal(e) {
+            e.preventDefault();
+            document.getElementById('deleteModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            patientToDeleteId = null;
+        }
+
+        // Show Empty State
+        function showEmptyState() {
+            const patientsGrid = document.getElementById('patientsGrid');
+            patientsGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="empty-title">No Patients Found</h3>
+                    <p class="empty-message">All patients have been removed from the system.</p>
+                </div>
+            `;
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                if (e.target.id === 'deleteModal') {
+                    closeDeleteModal();
+                }
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
+    </script>
+
+{% endblock %}

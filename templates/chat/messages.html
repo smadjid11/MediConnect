@@ -1,0 +1,1042 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    <title>MediConnect - Messages</title>
+{% endblock %}
+
+{% block content %}
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo {
+            background: #2563eb;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .nav-link.active {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .btn-login {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger {
+            width: 25px;
+            height: 3px;
+            background: #374151;
+            transition: all 0.3s;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            padding: 40px 0 40px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Messages Section */
+        .messages-section {
+            padding: 40px 0 80px;
+        }
+
+        .messages-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .messages-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .unread-count {
+            background: #ef4444;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .btn-new-chat {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-new-chat:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Messages Container */
+        .messages-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .messages-list {
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            display: block;
+            padding: 20px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            text-decoration: none;
+        }
+
+        .message-item:hover {
+            background: #f8fafc;
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+        }
+
+        .message-item.unread {
+            background: #eff6ff;
+        }
+
+        .message-item.unread:hover {
+            background: #dbeafe;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .doctor-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        .message-info {
+            flex: 1;
+        }
+
+        .doctor-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .message-item.unread .doctor-name {
+            font-weight: 700;
+        }
+
+        .doctor-specialty {
+            font-size: 0.875rem;
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        .message-time {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: left;
+        }
+
+        .message-item.unread .message-time {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .message-preview {
+            font-size: 0.95rem;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .message-item.unread .message-preview {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .message-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .unread-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .message-item.unread .unread-badge {
+            display: block;
+        }
+
+        .online-status {
+            position: absolute;
+            top: 20px;
+            right: 18px;
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .message-item.online .online-status {
+            display: block;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #d1d5db;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Footer */
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 48px 0 24px;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 32px;
+        }
+
+        .footer-brand .nav-brand .logo {
+            background: #2563eb;
+        }
+
+        .footer-brand .brand-name {
+            color: white;
+        }
+
+        .footer-description {
+            color: #9ca3af;
+            margin-top: 16px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-list {
+            list-style: none;
+        }
+
+        .footer-list li {
+            margin-bottom: 8px;
+        }
+
+        .footer-list a {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-list a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-link {
+            background: #374151;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 24px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: #9ca3af;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: white;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 40px;
+                gap: 24px;
+                transition: left 0.3s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px);
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px);
+            }
+            
+            .page-header {
+                padding: 40px 0 30px;
+                {% comment %} margin-bottom: 0; {% endcomment %}
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .messages-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            
+            .messages-title {
+                justify-content: center;
+                font-size: 1.75rem;
+            }
+            
+            .message-item {
+                padding: 16px 20px;
+            }
+            
+            .message-header {
+                gap: 12px;
+            }
+            
+            .doctor-avatar {
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .messages-container {
+                margin: 0 -4px;
+                border-radius: 12px;
+            }
+            
+            .message-item {
+                padding: 14px 16px;
+            }
+            
+            .doctor-avatar {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .doctor-name {
+                font-size: 1rem;
+            }
+            
+            .message-preview {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-item {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .message-item:nth-child(1) { animation-delay: 0.1s; }
+        .message-item:nth-child(2) { animation-delay: 0.15s; }
+        .message-item:nth-child(3) { animation-delay: 0.2s; }
+        .message-item:nth-child(4) { animation-delay: 0.25s; }
+        .message-item:nth-child(5) { animation-delay: 0.3s; }
+        .message-item:nth-child(6) { animation-delay: 0.35s; }
+        .message-item:nth-child(7) { animation-delay: 0.4s; }
+        .message-item:nth-child(8) { animation-delay: 0.45s; }
+
+        /* Pulse animation for unread messages */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.3);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+            }
+        }
+
+        .message-item.unread {
+            animation: pulse 2s infinite;
+        }
+    </style>
+
+    <!-- Page Header -->
+    <section class="page-header" style="margin-bottom: 0;">
+        <div class="container">
+            <h1 class="page-title">Your Medical Messages</h1>
+            <p class="page-subtitle">
+                Keep track of all your conversations with certified doctors in one place
+            </p>
+        </div>
+    </section>
+
+    <!-- Messages Section -->
+    <section class="messages-section">
+        <div class="container">
+            <div class="messages-header">
+                <h2 class="messages-title">
+                    <i class="fas fa-envelope"></i>
+                    Messages
+                    <span class="unread-count" id="unreadCount">5</span>
+                </h2>
+            </div>
+
+            <div class="messages-container">
+                <div class="messages-list" id="messagesList">
+                    {% for chatroom in chatrooms %}
+                        {% if chatroom.1.body or chatroom.1.image %}
+                            {% if chatroom.1.is_viewed or chatroom.2 != chatroom.1.sender %}
+                                {% if chatroom.2 %}
+                                    <!-- Read Message Exist Other User -->
+                                    <a href="{% url 'chat' chatroom.0.chatroom_name %}" class="message-item {% if chatroom.3 %}online{% endif %}" user-id="{{ chatroom.2.id }}" message-id="{{ chatroom.1.id }}">
+                                        {% if chatroom.3 %}
+                                            <div class="online-status"></div>
+                                        {% endif %}
+                                        <div class="message-header">
+                                            {% if chatroom.2.doctorprofile %}
+                                                <img src="{{ chatroom.2.doctorprofile.avatar.url }}" alt="{{ chatroom.2.first_name }}" class="doctor-avatar">
+                                            {% elif chatroom.2.patientprofile %}
+                                                <img src="{% if chatroom.2.patientprofile.avatar %}{{ chatroom.2.patientprofile.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" alt="{{ chatroom.2.first_name }}" class="doctor-avatar">
+                                            {% elif chatroom.2.adminprofile %}
+                                                <img src="{{ chatroom.2.adminprofile.avatar.url }}" alt="{{ chatroom.2.first_name }}" class="doctor-avatar">
+                                            {% endif %}
+                                            <div class="message-info">
+                                                <h3 class="doctor-name">{{ chatroom.2.first_name }}</h3>
+                                                <p class="doctor-specialty">{{ chatroom.2.doctorprofile.speciality }}</p>
+                                            </div>
+                                            <div class="message-time">{{ chatroom.1.created|timesince }}</div>
+                                        </div>
+                                        <p class="message-preview">{{ chatroom.1.body }}</p>
+                                        <div class="message-status">
+                                            {% if request.user == chatroom.1.sender %}
+                                                {% if chatroom.1.is_viewed %}
+                                                    <i class="fas fa-check-double" style="color: #10b981;"></i>
+                                                {% else %}
+                                                    <i class="fas fa-check-double" style="color: grey;"></i> 
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                {% else %}
+                                    <!-- Read Message Does Not Exist Other User -->
+                                    <a href="{% url 'chat' chatroom.0.chatroom_name %}" class="message-item {% if chatroom.3 %}online{% endif %}" user-id="{{ chatroom.2.id }}" message-id="{{ chatroom.1.id }}">
+                                        <div class="message-header">
+                                            <img src="{% static 'images/default-patient-pfp.jpg' %}" alt="Deleted User" class="doctor-avatar">
+                                            <div class="message-info">
+                                                <h3 class="doctor-name" style="color: red;">Deleted User</h3>
+                                            </div>
+                                            <div class="message-time">{{ chatroom.1.created|timesince }}</div>
+                                        </div>
+                                        <p class="message-preview">{{ chatroom.1.body }}</p>
+                                        <div class="message-status">
+                                            {% if request.user == chatroom.1.sender %}
+                                                {% if chatroom.1.is_viewed %}
+                                                    <i class="fas fa-check-double" style="color: #10b981;"></i>
+                                                {% else %}
+                                                    <i class="fas fa-check-double" style="color: grey;"></i> 
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                {% if chatroom.2 %}
+                                    <!-- Unread Message Exist Other User  -->
+                                    <a href="{% url 'chat' chatroom.0.chatroom_name %}" class="message-item unread {% if chatroom.3 %}online{% endif %}" user-id="{{ chatroom.2.id }}" message-id="{{ chatroom.1.id }}">
+                                        {% if chatroom.3 %}
+                                            <div class="online-status"></div>
+                                        {% endif %}
+                                        <div class="message-header">
+                                            {% if chatroom.2.doctorprofile %}
+                                                <img src="{{ chatroom.2.doctorprofile.avatar.url }}" alt="{{ chatroom.2.first_name }}" class="doctor-avatar">
+                                            {% elif chatroom.2.patientprofile %}
+                                                <img src="{% if chatroom.2.patientprofile.avatar %}{{ chatroom.2.patientprofile.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" alt="{{ chatroom.2.first_name }}" class="doctor-avatar">
+                                            {% elif chatroom.2.adminprofile %}
+                                                <img src="{{ chatroom.2.adminprofile.avatar.url }}" alt="{{ chatroom.2.first_name }}" class="doctor-avatar">
+                                            {% endif %}
+                                            <div class="message-info">
+                                                <h3 class="doctor-name">{{ chatroom.2.first_name }}</h3>
+                                                <p class="doctor-specialty">{{ chatroom.2.doctorprofile.speciality }}</p>
+                                            </div>
+                                            <div class="message-time">{{ chatroom.1.created|timesince }}</div>
+                                        </div>
+                                        <p class="message-preview">{{ chatroom.1.body }}</p>
+                                        <div class="message-status">
+                                            <span class="unread-badge">New</span>
+                                        </div>
+                                    </a>
+                                {% else %}
+                                     <!-- Unread Message Exist Other User  -->
+                                    <a href="{% url 'chat' chatroom.0.chatroom_name %}" class="message-item unread {% if chatroom.3 %}online{% endif %}" user-id="{{ chatroom.2.id }}" message-id="{{ chatroom.1.id }}">
+                                        <div class="message-header">
+                                            <img src="{% static 'images/default-patient-pfp.jpg' %}" alt="Deleted User" class="doctor-avatar">
+                                            <div class="message-info">
+                                                <h3 class="doctor-name" style="color: red;">Deleted User</h3>
+                                            </div>
+                                            <div class="message-time">{{ chatroom.1.created|timesince }}</div>
+                                        </div>
+                                        <p class="message-preview">{{ chatroom.1.body }}</p>
+                                        <div class="message-status">
+                                            <span class="unread-badge">New</span>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Message functionality
+        const messageItems = document.querySelectorAll('.message-item');
+        const unreadCountElement = document.getElementById('unreadCount');
+        const newChatBtn = document.getElementById('newChatBtn');
+
+        // Update unread count
+        function updateUnreadCount() {
+            const unreadMessages = document.querySelectorAll('.message-item.unread');
+            const count = unreadMessages.length;
+            unreadCountElement.textContent = count;
+            
+            if (count === 0) {
+                unreadCountElement.style.display = 'none';
+            } else {
+                unreadCountElement.style.display = 'inline-block';
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas ${getNotificationIcon(type)}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Add notification styles
+            notification.style.cssText = `
+                position: fixed;
+                top: 90px;
+                right: 20px;
+                background: ${getNotificationColor(type)};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1001;
+                font-weight: 500;
+                animation: slideInRight 0.3s ease-out;
+                max-width: 300px;
+            `;
+            
+            // Add animation styles if not already added
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOutRight {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                    .notification-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'success': return 'fa-check-circle';
+                case 'error': return 'fa-exclamation-circle';
+                case 'warning': return 'fa-exclamation-triangle';
+                default: return 'fa-info-circle';
+            }
+        }
+
+        function getNotificationColor(type) {
+            switch (type) {
+                case 'success': return '#10b981';
+                case 'error': return '#ef4444';
+                case 'warning': return '#f59e0b';
+                default: return '#2563eb';
+            }
+        }
+
+        // Search functionality
+        function addSearchFunctionality() {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'search-container';
+            searchContainer.innerHTML = `
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="messageSearch" placeholder="Search messages..." />
+                    <button id="clearSearch" class="clear-search" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Add search styles
+            searchContainer.style.cssText = `
+                margin-bottom: 20px;
+            `;
+            
+            const searchBoxStyle = `
+                .search-box {
+                    position: relative;
+                    max-width: 400px;
+                }
+                .search-box input {
+                    width: 100%;
+                    padding: 12px 45px 12px 40px;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 25px;
+                    font-size: 1rem;
+                    transition: all 0.3s;
+                    background: white;
+                }
+                .search-box input:focus {
+                    outline: none;
+                    border-color: #2563eb;
+                    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                }
+                .search-box .fa-search {
+                    position: absolute;
+                    left: 15px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #6b7280;
+                }
+                .clear-search {
+                    position: absolute;
+                    right: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: none;
+                    border: none;
+                    color: #6b7280;
+                    cursor: pointer;
+                    padding: 5px;
+                    border-radius: 50%;
+                    transition: all 0.3s;
+                }
+                .clear-search:hover {
+                    background: #f3f4f6;
+                    color: #374151;
+                }
+            `;
+            
+            if (!document.querySelector('#search-styles')) {
+                const style = document.createElement('style');
+                style.id = 'search-styles';
+                style.textContent = searchBoxStyle;
+                document.head.appendChild(style);
+            }
+            
+            const messagesHeader = document.querySelector('.messages-header');
+            messagesHeader.appendChild(searchContainer);
+            
+            const searchInput = document.getElementById('messageSearch');
+            const clearSearchBtn = document.getElementById('clearSearch');
+            
+            searchInput.addEventListener('input', handleSearch);
+            clearSearchBtn.addEventListener('click', clearSearch);
+            
+            function handleSearch(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const messages = document.querySelectorAll('.message-item');
+                
+                if (searchTerm) {
+                    clearSearchBtn.style.display = 'block';
+                } else {
+                    clearSearchBtn.style.display = 'none';
+                }
+                
+                messages.forEach(message => {
+                    const doctorName = message.querySelector('.doctor-name').textContent.toLowerCase();
+                    const specialty = message.querySelector('.doctor-specialty').textContent.toLowerCase();
+                    const preview = message.querySelector('.message-preview').textContent.toLowerCase();
+                    
+                    if (doctorName.includes(searchTerm) || 
+                        specialty.includes(searchTerm) || 
+                        preview.includes(searchTerm)) {
+                        message.style.display = 'block';
+                    } else {
+                        message.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide empty state
+                const visibleMessages = document.querySelectorAll('.message-item[style*="block"], .message-item:not([style*="none"])');
+                if (searchTerm && visibleMessages.length === 0) {
+                    showEmptySearchState();
+                } else {
+                    hideEmptySearchState();
+                }
+            }
+            
+            function clearSearch() {
+                searchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                
+                // Show all messages
+                const messages = document.querySelectorAll('.message-item');
+                messages.forEach(message => {
+                    message.style.display = 'block';
+                });
+                
+                hideEmptySearchState();
+                searchInput.focus();
+            }
+            
+            function showEmptySearchState() {
+                let emptyState = document.querySelector('.empty-search-state');
+                if (!emptyState) {
+                    emptyState = document.createElement('div');
+                    emptyState.className = 'empty-search-state';
+                    emptyState.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h3>No results found</h3>
+                            <p>We couldn't find any messages matching your search</p>
+                        </div>
+                    `;
+                    document.querySelector('.messages-list').appendChild(emptyState);
+                }
+                emptyState.style.display = 'block';
+            }
+            
+            function hideEmptySearchState() {
+                const emptyState = document.querySelector('.empty-search-state');
+                if (emptyState) {
+                    emptyState.style.display = 'none';
+                }
+            }
+        }
+
+        // Initialize search functionality
+        addSearchFunctionality();
+
+        // Auto-refresh messages every 30 seconds
+        setInterval(() => {
+            // In a real application, you would fetch new messages from the server
+            console.log('Checking for new messages...');
+        }, 30000);
+
+        // Initial unread count update
+        updateUnreadCount();
+
+        // Smooth scroll to top when page loads
+        window.addEventListener('load', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Handle online/offline status simulation
+        function simulateOnlineStatus() {
+            const onlineMessages = document.querySelectorAll('.message-item.online');
+            onlineMessages.forEach(message => {
+                // Randomly toggle online status every 60 seconds
+                setInterval(() => {
+                    if (Math.random() > 0.3) {
+                        message.classList.add('online');
+                    } else {
+                        message.classList.remove('online');
+                    }
+                }, 60000);
+            });
+        }
+
+        simulateOnlineStatus();
+    </script>
+
+{% endblock %}

@@ -1,0 +1,888 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    <title>MediConnect - Talk to a Doctor Online</title>
+{% endblock %}
+
+{% block content %}
+    <style>
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+            {% if request.user.is_authenticated %}
+                padding-top: 0px;
+            {% endif %}
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            padding: 120px 0 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            color: #111827;
+        }
+
+        .text-blue {
+            color: #2563eb;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            gap: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+        }
+
+        .hero-features {
+            display: flex;
+            gap: 24px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .feature-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .feature-dot.green { background: #10b981; }
+        .feature-dot.blue { background: #2563eb; }
+        .feature-dot.purple { background: #8b5cf6; }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            padding: 32px;
+            transform: rotate(2deg);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .image-card:hover {
+            transform: rotate(0deg);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        .floating-icon {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            background: #10b981;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .step-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover {
+            background: #eff6ff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2563eb;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .step-icon {
+            background: white;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 24px auto;
+            font-size: 24px;
+            color: #2563eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .step-description {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* Doctors Section */
+        .doctors {
+            padding: 80px 0;
+            background: #f9fafb;
+        }
+
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .doctor-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .doctor-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .available-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .doctor-info {
+            padding: 24px;
+        }
+
+        .doctor-name {
+            width: fit-content;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+            position: relative;
+            text-decoration: none;
+            cursor: pointer;
+            display: -webkit-box;       /* إنشاء صندوق مرن */
+            -webkit-line-clamp: 1;      /* عدد الأسطر المسموح بها */
+            -webkit-box-orient: vertical;
+            overflow: hidden;           /* إخفاء النص الزائد */
+            text-overflow: ellipsis;
+        }
+
+        .doctor-name:after {
+            content: '';
+            background-color: #000;
+            position: absolute;
+            width: 0;
+            height: 2px;
+            top: 90%;
+            left: 0;
+            border-radius: 10px;
+            transition: .3s ease;
+        }
+
+        .doctor-name:hover::after {
+            width: 100%;
+        }
+
+        .doctor-specialty {
+            color: #2563eb;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .doctor-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .stars i {
+            color: #fbbf24;
+            font-size: 0.875rem;
+        }
+
+        .rating-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .btn-chat {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .btn-chat:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-chat.unavailable {
+            background: #e5e7eb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        /* Testimonials Section */
+        .testimonials {
+            padding: 80px 0;
+            background: #eff6ff;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .testimonial-card:hover {
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .quote-icon {
+            color: #93c5fd;
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .testimonial-card .stars {
+            margin-bottom: 16px;
+        }
+
+        .testimonial-text {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .patient-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+            display: -webkit-box;       /* إنشاء صندوق مرن */
+            -webkit-line-clamp: 1;      /* عدد الأسطر المسموح بها */
+            -webkit-box-orient: vertical;
+            overflow: hidden;           /* إخفاء النص الزائد */
+            text-overflow: ellipsis;
+        }
+
+        .patient-condition {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .hero-content {
+                gap: 40px;
+            }
+            
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 100px 0 60px;
+                min-height: auto;
+            }
+            
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+                text-align: center;
+            }
+            
+            .hero-subtitle {
+                text-align: center;
+            }
+            
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .hero-features {
+                justify-content: center;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .doctors-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+            
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .step-card,
+            .doctor-card,
+            .testimonial-card {
+                margin: 0 8px;
+            }
+            
+            .hero-features {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text > * {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero-text > *:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .hero-text > *:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .hero-text > *:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+    </style>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Talk to a doctor now — <span class="text-blue">from your home</span>, in just seconds.
+                    </h1>
+                    <p class="hero-subtitle">
+                        MediConnect connects you with certified doctors via instant messaging — no appointment, no commute.
+                    </p>
+                    <a href="#doctors" class="btn-primary">
+                        <i class="fas fa-comments"></i>
+                        Start a Chat with a Doctor
+                        <i class="fas fa-arrow-down"></i>
+                    </a>
+                    
+                    <div class="hero-features">
+                        <div class="feature-item">
+                            <div class="feature-dot green"></div>
+                            <span>24/7 Available</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-dot blue"></div>
+                            <span>Certified Doctors</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-dot purple"></div>
+                            <span>Instant Response</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hero-image">
+                    <div class="image-card">
+                        <img src="{% static 'images/main-image.jpg' %}" alt="Doctor consultation">
+                        <div class="floating-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Getting medical care has never been easier. Follow these simple steps to connect with a doctor instantly.</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="step-title">Choose a doctor by specialty</h3>
+                    <p class="step-description">Browse our network of certified doctors and select the specialist that matches your needs.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3 class="step-title">Start an instant live chat</h3>
+                    <p class="step-description">Connect immediately with your chosen doctor through our secure messaging platform.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <h3 class="step-title">Get advice or a medical report in minutes</h3>
+                    <p class="step-description">Receive professional medical advice, prescriptions, or reports within minutes of your consultation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Doctors Section -->
+    <section id="doctors" class="doctors">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Doctors</h2>
+                <p class="section-subtitle">Connect with our top-rated, certified doctors who are ready to help you with your health concerns.</p>
+            </div>
+            
+            <div class="doctors-grid">
+                {% for doctor in doctors %}
+                    <div class="doctor-card">
+                        <div class="doctor-image">
+                            <img src="{{ doctor.avatar.url }}" alt="{{ doctor.user.first_name }}">
+                            {% if doctor.is_available %}
+                                <div class="available-badge">Available</div>
+                            {% else %}
+                                <div class="available-badge" style="background-color: #d21313">Unvailable</div>
+                            {% endif %}
+                        </div>
+                        <div class="doctor-info">
+                            <a href="{% url 'doctor-profile' doctor.user.username %}" class="doctor-name">{{ doctor.user.first_name }}</a>
+                            <p class="doctor-specialty">{{ doctor.speciality }}</p>
+                            {% if doctor.is_available %}
+                                <a href="{% url 'start-chat' doctor.user.username %}" class="btn-chat">
+                                    <i class="fas fa-comments"></i>
+                                    Start Chat
+                                </a>
+                            {% else %}
+                                <button class="btn-chat unavailable">
+                                    <i class="fas fa-comments"></i>
+                                    Unavailable
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% comment %} <div class="doctor-card">
+                    <div class="doctor-image">
+                        <img src="https://images.unsplash.com/photo-1594824811330-1e5c3e8e4e82?auto=format&fit=crop&w=400&q=80" alt="Dr. Emily Rodriguez">
+                    </div>
+                    <div class="doctor-info">
+                        <h3 class="doctor-name">Dr. Emily Rodriguez</h3>
+                        <p class="doctor-specialty">Pediatrics</p>
+                        <div class="doctor-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-text">4.9 (156 reviews)</span>
+                        </div>
+                        <button class="btn-chat unavailable">
+                            <i class="fas fa-comments"></i>
+                            Unavailable
+                        </button>
+                    </div>
+                </div> {% endcomment %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    {% if reviews %}
+        <section class="testimonials" style="{% if reviews|length > 3 %}padding-bottom: 0;{% endif %}">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">What Our Patients Say</h2>
+                    <p class="section-subtitle">Real stories from real patients who found the care they needed through MediConnect.</p>
+                </div>
+
+                <div class="testimonials-grid">
+                    {% for review in reviews|slice:":3" %}
+                        <div class="testimonial-card">
+                            <div class="quote-icon">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <div class="stars">
+                                {% for _ in ""|center:review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <p class="testimonial-text">
+                                {{ review.comment }}
+                            </p>
+                            <div class="patient-info">
+                                <img src="{% if review.patient.avatar %}{{ review.patient.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" alt="{{ review.patient.user.first_name }}" class="patient-image">
+                                <div class="patient-details">
+                                    <h4 class="patient-name">{{ review.patient.user.first_name }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if reviews|length > 3 %}
+                    <div class="section-header">
+                        <a href="{% url 'reviews' %}" class="section-subtitle" style="display: block; margin-top: 20px;">See All Reviews</a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Popup -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "success" %}
+                <!-- Success Popup -->
+                {% include 'app/parts/pop-up/success-message.html' with message=message.message %}
+            {% elif message.tags == "error" %}
+                <!-- Error Popup -->
+                {% include 'app/parts/pop-up/error-message.html' with message=message.message %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header background change on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 50) {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.backdropFilter = 'blur(10px)';
+            } else {
+                header.style.background = 'white';
+                header.style.backdropFilter = 'none';
+            }
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.step-card, .doctor-card, .testimonial-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+
+        // Add loading animation delay for staggered effect
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.step-card, .doctor-card, .testimonial-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Form validation and interactions (if needed in future)
+        const validateEmail = (email) => {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        };
+
+        // Responsive image loading
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            img.addEventListener('load', () => {
+                img.style.opacity = '1';
+            });
+            img.style.opacity = '0';
+            img.style.transition = 'opacity 0.3s ease-in-out';
+        });
+
+        // Touch gestures for mobile (basic swipe detection)
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        const handleSwipe = () => {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swiped left - could be used for navigation
+                    console.log('Swiped left');
+                } else {
+                    // Swiped right - could be used for navigation
+                    console.log('Swiped right');
+                }
+            }
+        };
+
+        // Performance optimization: Lazy loading for images
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src || img.src;
+                    img.classList.remove('lazy');
+                    observer.unobserve(img);
+                }
+            });
+        });
+    </script>
+{% endblock %}

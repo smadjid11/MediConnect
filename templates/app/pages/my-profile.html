@@ -1,0 +1,901 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    <title>Profile - MediConnect</title>
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Profile Section */
+        .profile-section {
+            padding: 40px 80px;
+            min-height: 100vh;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .profile-subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .profile-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            padding: 48px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .profile-avatar {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #2563eb;
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+
+        .avatar-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #10b981;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border: 3px solid white;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #2563eb;
+            transition: all 0.3s;
+        }
+
+        .info-item:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            color: #111827;
+            font-size: 1.1rem;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn-edit {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-edit:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 0 24px 24px;
+        }
+
+        .avatar-upload {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .avatar-upload-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #2563eb;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .avatar-upload-container:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        .avatar-upload-icon {
+            color: white;
+            font-size: 24px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .modal-footer {
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-save {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-save:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+
+            .profile-section {
+                padding: 40px 0 60px;
+            }
+
+            .profile-container {
+                padding: 32px 24px;
+                margin: 0 16px;
+            }
+
+            .profile-title {
+                font-size: 2rem;
+            }
+
+            .profile-info {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-edit, .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .btn-save, .btn-cancel {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .profile-container {
+                padding: 24px 16px;
+            }
+
+            .profile-title {
+                font-size: 1.75rem;
+            }
+
+            .info-item {
+                padding: 16px;
+            }
+
+            .avatar-img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="container">
+            <div class="profile-header">
+                <h1 class="profile-title">My Profile</h1>
+                <p class="profile-subtitle">Manage your account information and preferences</p>
+            </div>
+
+            <div class="profile-container">
+                <div class="profile-avatar">
+                    <div class="avatar-container">
+                        <img src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" 
+                            alt="{{ profile.user.first_name }} avatar" class="avatar-img" id="profileAvatar">
+                        <div class="avatar-badge">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-info">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user"></i>
+                            Full Name
+                        </div>
+                        <div class="info-value" id="displayFullName">{{ profile.user.first_name }}</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-at"></i>
+                            Username
+                        </div>
+                        <div class="info-value" id="displayUsername">{{ profile.user.username }}</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </div>
+                        <div class="info-value" id="displayEmail">{{ profile.user.email }}</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-phone"></i>
+                            Phone Number
+                        </div>
+                        <div class="info-value" id="displayPhone">{{ profile.phone }}</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar"></i>
+                            Date of Birth
+                        </div>
+                        <div class="info-value" id="displayBirthDate">{{ profile.birth_date }}</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-venus-mars"></i>
+                            Gender
+                        </div>
+                        <div class="info-value" id="displayGender">{{ profile.gender }}</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn-edit" onclick="openEditModal()">
+                        <i class="fas fa-edit"></i>
+                        Edit Profile
+                    </button>
+                    <button class="btn-secondary" onclick="changePassword()">
+                        <i class="fas fa-lock"></i>
+                        Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Edit Profile Modal -->
+    <form method="POST" enctype="multipart/form-data" class="modal-overlay" id="editModal">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="edit_profile">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile</h2>
+                <div class="modal-close" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div id="editProfileForm">
+                    <div class="avatar-upload">
+                        <div class="avatar-upload-container">
+                            <img src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" 
+                                alt="{{ profile.user.first_name }} avatar" class="avatar-preview" id="avatarPreview">
+                            <div class="avatar-upload-overlay" onclick="document.getElementById('avatarInput').click()">
+                                <i class="fas fa-camera avatar-upload-icon"></i>
+                            </div>
+                        </div>
+                        <input type="file" name="avatar" id="avatarInput" class="file-input" accept="image/*" onchange="previewAvatar(this)">
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="editFullName">Full Name</label>
+                            <input type="text" name="full_name" id="editFullName" class="form-input" value="{{ profile.user.first_name }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editUsername">Username</label>
+                            <input type="text" name="username" id="editUsername" class="form-input" value="{{ profile.user.username }}" required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label" for="editEmail">Email Address</label>
+                            <input type="email" name="email" id="editEmail" class="form-input" value="{{ profile.user.email }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editPhone">Phone Number</label>
+                            <input type="text" name="phone" id="editPhone" class="form-input" value="{{ profile.phone }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editBirthDate">Date of Birth</label>
+                            <input type="date" name="birth_date" id="editBirthDate" class="form-input" value="{{ profile.birth_date|date:"Y-m-d" }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editGender">Gender</label>
+                            <select name="gender" id="editGender" class="form-select" required>
+                                {% if profile.gender == 'male' %}
+                                    <option value="male" selected>Male</option>
+                                    <option value="female">Female</option>
+                                {% else %}
+                                    <option value="male">Male</option>
+                                    <option value="female" selected>Female</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="btn-cancel" onclick="closeEditModal()">Cancel</div>
+                <button type="submit" class="btn-save" id="saveBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <div class="loading-spinner" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Change Password Modal -->
+    <form method="POST" class="modal-overlay" id="changePasswordModal">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="edit_password">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Change Password</h2>
+                <div class="modal-close" onclick="closeChangePasswordModal()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div id="changePasswordForm">
+                    <div class="form-group">
+                        <label class="form-label" for="currentPassword">Current Password</label>
+                        <input type="password" name="old_password" id="currentPassword" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newPassword">New Password</label>
+                        <input type="password" name="new_password1" id="newPassword" class="form-input" required>
+                        <small style="color: #6b7280; font-size: 0.875rem;">Password must be at least 8 characters long</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                        <input type="password" name="new_password2" id="confirmPassword" class="form-input" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="btn-cancel" onclick="closeChangePasswordModal()">Cancel</div>
+                <button type="submit" class="btn-save" id="savePasswordBtn">
+                    <span class="btn-text">Change Password</span>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Popup -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "success" %}
+                <!-- Success Popup -->
+                {% include 'app/parts/pop-up/success-message.html' with message=message.message %}
+            {% elif message.tags == "error" %}
+                <!-- Error Popup -->
+                {% include 'app/parts/pop-up/error-message.html' with message=message.message %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        // Header background change on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 50) {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.backdropFilter = 'blur(10px)';
+            } else {
+                header.style.background = 'white';
+                header.style.backdropFilter = 'none';
+            }
+        });
+
+        // Profile functions
+        function openEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        {% comment %} function saveProfile() {
+            const saveBtn = document.getElementById('saveBtn');
+            const btnText = saveBtn.querySelector('.btn-text');
+            const loadingSpinner = saveBtn.querySelector('.loading-spinner');
+            
+            // Show loading state
+            saveBtn.disabled = true;
+            btnText.textContent = 'Saving...';
+            loadingSpinner.style.display = 'block';
+
+            // Simulate API call
+            setTimeout(() => {
+                // Get form values
+                const fullName = document.getElementById('editFullName').value;
+                const username = document.getElementById('editUsername').value;
+                const email = document.getElementById('editEmail').value;
+                const phone = document.getElementById('editPhone').value;
+                const birthDate = document.getElementById('editBirthDate').value;
+                const gender = document.getElementById('editGender').value;
+                const avatarSrc = document.getElementById('avatarPreview').src;
+
+                // Update display values
+                document.getElementById('displayFullName').textContent = fullName;
+                document.getElementById('displayUsername').textContent = username;
+                document.getElementById('displayEmail').textContent = email;
+                document.getElementById('displayPhone').textContent = phone;
+                document.getElementById('displayGender').textContent = gender;
+                document.getElementById('profileAvatar').src = avatarSrc;
+
+                // Format and update birth date
+                const date = new Date(birthDate);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('displayBirthDate').textContent = formattedDate;
+
+                // Reset button state
+                saveBtn.disabled = false;
+                btnText.textContent = 'Save Changes';
+                loadingSpinner.style.display = 'none';
+
+                // Close modal
+                closeEditModal();
+
+                // Show success message
+                alert('Profile updated successfully!');
+            }, 1500);
+        } {% endcomment %}
+
+        function changePassword() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            
+            // Reset form
+            document.getElementById('changePasswordForm').reset();
+        }
+
+        {% comment %} function saveNewPassword() {
+            const saveBtn = document.getElementById('savePasswordBtn');
+            const btnText = saveBtn.querySelector('.btn-text');
+            const loadingSpinner = saveBtn.querySelector('.loading-spinner');
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Basic validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alert('New password must be at least 8 characters long');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            // Show loading state
+            saveBtn.disabled = true;
+            btnText.textContent = 'Changing...';
+            loadingSpinner.style.display = 'block';
+
+            // Simulate API call
+            setTimeout(() => {
+                // Reset button state
+                saveBtn.disabled = false;
+                btnText.textContent = 'Change Password';
+                loadingSpinner.style.display = 'none';
+
+                // Close modal
+                closeChangePasswordModal();
+
+                // Show success message
+                alert('Password changed successfully!');
+            }, 1500);
+        } {% endcomment %}
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            const editModal = document.getElementById('editModal');
+            const changePasswordModal = document.getElementById('changePasswordModal');
+            
+            if (e.target === editModal) {
+                closeEditModal();
+            }
+            
+            if (e.target === changePasswordModal) {
+                closeChangePasswordModal();
+            }
+        });
+
+        // Form validation
+
+        {% comment %} document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveNewPassword();
+        }); {% endcomment %}
+    </script>
+
+{% endblock %}

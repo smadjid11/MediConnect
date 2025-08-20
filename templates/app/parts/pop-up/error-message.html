@@ -1,0 +1,172 @@
+{% block content %}
+    <!-- Error Popup -->
+
+    <style>
+        /* Error Popup */
+        .error-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .error-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .error-popup.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-icon {
+            width: 64px;
+            height: 64px;
+            background: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: #dc2626;
+            font-size: 24px;
+        }
+
+        .popup-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+
+        .popup-message {
+            color: #6b7280;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .popup-close {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .popup-close:hover {
+            background: #1d4ed8;
+        }
+
+        .close-x {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .close-x:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .popup-content {
+                margin: 0 16px;
+                padding: 24px;
+            }
+        }
+    </style>
+
+    <div class="error-popup" id="errorPopup">
+        <div class="popup-content">
+            <button class="close-x" id="closePopup">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="popup-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="popup-title">
+                {{ message }}
+            </h2>
+            <button class="popup-close" id="closePopupBtn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Show error popup immediately when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorPopup = document.getElementById('errorPopup');
+            errorPopup.classList.add('show');
+        });
+
+        // Close popup functionality
+        const closePopup = document.getElementById('closePopup');
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        const errorPopup = document.getElementById('errorPopup');
+
+        function hidePopup() {
+            errorPopup.classList.remove('show');
+        }
+
+        closePopup.addEventListener('click', hidePopup);
+        closePopupBtn.addEventListener('click', hidePopup);
+
+        // Close popup when clicking outside
+        errorPopup.addEventListener('click', function(e) {
+            if (e.target === errorPopup) {
+                hidePopup();
+            }
+        });
+    </script>
+{% endblock %}

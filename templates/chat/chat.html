@@ -1,0 +1,1483 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - MediConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="{% static 'icon.png' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #eff6ff;
+        }
+
+        .doctor-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .doctor-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+            position: relative;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 14px;
+            height: 14px;
+            background: #10b981;
+            border: 2px solid white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .offline-indicator {
+            background: #6b7280;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .doctor-details h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .doctor-status {
+            font-size: 0.875rem;
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .doctor-status.offline {
+            color: #6b7280;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+            position: relative;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+        }
+
+        .dropdown-item.danger {
+            color: #dc2626;
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+
+        .dropdown-item i {
+            font-size: 1rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 70%;
+        }
+
+        .animated {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+        }
+
+        .message.received {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.received .message-bubble {
+            background: white;
+            color: #374151;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message-image {
+            max-width: 350px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .message.sent .message-time {
+            justify-content: flex-end;
+        }
+
+        .message-status {
+            font-size: 0.75rem;
+            margin-left: 4px;
+        }
+
+        .status-sent {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .status-delivered {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .status-viewed {
+            color: #10b981;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            max-width: 80px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 10px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Chat Input */
+        .chat-input {
+            background: white;
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 12px 50px 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 22px;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            transition: all 0.3s;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .message-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .message-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .message-input:disabled {
+            border: 2px solid #ff7777;
+        }
+
+        .message-input:disabled::placeholder {
+            color: red;
+        }
+
+        .input-actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 4px;
+        }
+
+        .input-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1.125rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .input-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .send-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .send-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Image Preview */
+        .image-preview {
+            display: none;
+            padding: 16px 24px 0;
+            background: white;
+        }
+
+        .preview-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+        }
+
+        .preview-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .preview-info {
+            flex: 1;
+        }
+
+        .preview-name {
+            width: 300px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .preview-size {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .remove-preview {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .remove-preview:hover {
+            background: #dc2626;
+        }
+
+        /* Hidden file input */
+        .file-input {
+            display: none;
+        }
+
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Delete Confirmation Modal */
+        .delete-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .delete-modal-icon {
+            width: 64px;
+            height: 64px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #dc2626;
+            font-size: 1.5rem;
+        }
+
+        .delete-modal h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+
+        .delete-modal p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .delete-modal-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            min-width: 100px;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .chat-messages {
+                padding: 16px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .chat-input {
+                padding: 12px 16px;
+            }
+
+            .message-input {
+                padding: 10px 45px 10px 14px;
+                min-height: 40px;
+            }
+
+            .send-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .delete-modal-content {
+                padding: 24px;
+                margin: 16px;
+            }
+        }
+
+        @media (max-width: 510px) {
+            .message-image {
+                max-width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .doctor-details h3 {
+                font-size: 1rem;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .message-bubble {
+                padding: 10px 14px;
+            }
+
+            .chat-input {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .message-image {
+                max-width: 200px;
+            }
+        }
+    </style>
+
+    <style>
+        .status-loading {
+            animation: loading-animation 2s ease-out infinite;
+        }
+
+        @keyframes loading-animation {
+            0% {
+                rotate: 0deg;
+            }
+
+            100% {
+                rotate: 360deg;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            
+            <div class="doctor-info">
+                <div style="position: relative;">
+                    <img src="{% if other_profile.avatar %}{{ other_profile.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" alt="{% if other_user %}{{ other_user.first_name }}{% else %}Deleted User{% endif %}" class="doctor-avatar">
+                    {% if other_user_is_online %}
+                        <div class="online-indicator" id="onlineIndicator"></div>
+                    {% else %}
+                        <div class="online-indicator" id="onlineIndicator" style="background: #b91010; animation: none"></div>
+                    {% endif %}
+                </div>
+                
+                <div class="doctor-details">
+                    <h3>{% if other_user %}{{ other_user.first_name }}{% else %}Deleted User{% endif %}</h3>
+                    {% if other_user_is_online %}
+                        <div class="doctor-status" id="doctorStatus" user-id="{{ other_user.id }}">Online</div>
+                    {% elif other_user_is_online == False %}
+                        <div class="doctor-status" id="doctorStatus" style="color: #b91010;" user-id="{{ other_user.id }}">Offline</div>
+                    {% else %}
+                        <div class="doctor-status" id="doctorStatus" style="color: #b91010;">Deleted</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="chat-actions">
+                <button class="action-btn" title="More Options" onclick="toggleDropdown()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <button class="dropdown-item danger" onclick="showDeleteConfirmation()">
+                        <i class="fas fa-trash"></i>
+                        Delete Conversation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+            {% comment %} <div class="message sent" message-id="fdmgdkfg">
+                <div class="message-bubble">
+                    <img src="{% static 'images/default-patient-pfp.jpg' %}" alt="">
+                    <div class="message-text">Hello World</div>
+                    <div class="message-time">Sending..
+                        <span class="message-status status-loading">
+                            <i class="fa-solid fa-spinner"></i>
+                        </span>
+                    </div>
+                </div>
+            </div> {% endcomment %}
+            <!-- Sample Messages -->
+            {% for message in messages %}
+                {% if message.sender == request.user %}
+                    <div class="message sent" message-id={{ message.id }}>
+                        <div class="message-bubble">
+                            {% if message.image %}
+                                <img src="{% url 'protected-message-image' message.id %}" alt="Medical Report" class="message-image" onclick="openImageModal(this.src)">
+                            {% endif %}
+                            <div class="message-text">{{ message.body }}</div>
+                            <div class="message-time">
+                                {{ message.created }}
+                                {% if message.is_viewed %}
+                                    <span class="message-status status-viewed">
+                                        <i class="fa-solid fa-check-double"></i>
+                                    </span>
+                                {% else %}
+                                    <span class="message-status status-sent">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="message received" message-id={{ message.id }}>
+                        <div class="message-bubble">
+                            {% if message.image %}
+                                <img src="{% url 'protected-message-image' message.id %}" alt="Medical Report" class="message-image" onclick="openImageModal(this.src)">
+                            {% endif %}
+                            <div class="message-text">{{ message.body }}</div>
+                            <div class="message-time">{{ message.created }}</div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="image-preview" id="imagePreview">
+            <div class="preview-container">
+                <img src="" alt="Preview" class="preview-image" id="previewImg">
+                <div class="preview-info">
+                    <div class="preview-name" id="previewName">image.jpg</div>
+                    <div class="preview-size" id="previewSize">245 KB</div>
+                </div>
+                <button class="remove-preview" onclick="removeImagePreview()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            function fixPreviewNameWidth() {
+                document.querySelector(".preview-name").style.width = `${document.querySelector(".preview-name").parentElement.offsetWidth}px`;
+            }
+            fixPreviewNameWidth();
+        </script>
+
+        <!-- Chat Input -->
+        <div class="chat-input">
+            <div class="input-container">
+                <textarea 
+                    style="overflow-y : auto;"
+                    class="message-input" 
+                    id="messageInput" 
+                    {% if other_user %}
+                        placeholder="Type a message..." 
+                    {% else %}
+                        placeholder="Other user was deleted !" 
+                        disabled
+                    {% endif %}
+                    rows="1"
+                    onkeydown="handleKeyDown(event)"
+                    oninput="autoResizeTextarea(this)"
+                ></textarea>
+                
+                <div class="input-actions">
+                    <button class="input-btn" onclick="document.getElementById('fileInput').click()" title="Attach Image">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFileSelect(event)" oninput="">
+
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <button class="modal-close">&times;</button>
+        <img src="" alt="Full Size" class="modal-content" id="modalImage">
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="delete-modal" id="deleteModal">
+        <form method="POST" class="delete-modal-content">
+            {% csrf_token %}
+            <div class="delete-modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Delete Conversation</h3>
+            <p>Are you sure you want to delete this conversation? This action cannot be undone and all messages will be permanently removed.</p>
+            <div class="delete-modal-actions">
+                <button class="delete-modal-btn btn-cancel" onclick="hideDeleteConfirmation(event)">Cancel</button>
+                <button type="submit "class="delete-modal-btn btn-delete">Delete</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script>
+        let isOnline = true;
+        let typingTimeout;
+        let selectedFile = null;
+
+        document.querySelector('style').innerHTML += `
+            .chat-container, body {
+                height: ${window.innerHeight}px;
+            }
+        `;
+
+        document.querySelector(".chat-container").addEventListener("click", (e) => {
+            if (e.target.classList.contains("message-image")) {
+                openImageModal(e.target.src);
+            }
+        });
+
+        let ro = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (entry.contentRect.width && entry.contentRect.height) {
+                    scrollToBottom();
+                    ro.disconnect();
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            document.querySelector('style').innerHTML += `
+                .chat-container {
+                    height: ${window.innerHeight}px;
+                }
+            `;
+        });
+
+        {% if other_user %}
+            const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chatroom/{{chatroom.chatroom_name}}`);
+
+            chatSocket.onmessage = function(e) {
+                let data = JSON.parse(e.data);
+                if (data.type == 'connection') console.log(`chat status : ${data.status}`);
+
+                else if(data.type == 'chat') {
+                    const messageText = data.body_message;
+                    const selectedFile = data.image_message;
+
+                    const chatMessages = document.getElementById('chatMessages');
+                    const allMessages = document.querySelectorAll('.message');
+                    allMessages.forEach(msg => msg.classList.remove('animated'));
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message sent';
+                    
+                    const currentTime = data.created_message;
+                    
+                    let messageBubble = document.createElement('div');
+                    messageBubble.className = 'message-bubble';
+
+                    let image;
+                    // Add image if selected
+                    if (selectedFile) {
+                        const imageUrl = `/chat/protected/messages/${data.message_id}`;
+                        image = document.createElement('img');
+                        image.src = imageUrl;
+                        image.alt = 'Send Image';
+                        image.className = 'message-image';
+                        messageBubble.appendChild(image);
+                        
+                        // Scroll to bottom
+
+                        ro.observe(image);
+                    }
+                    
+                    // Add text if present
+                    if (messageText) {
+                        let messageTextElement = document.createElement('div');
+                        messageTextElement.className = 'message-text';
+                        messageTextElement.textContent = messageText;
+                        messageBubble.appendChild(messageTextElement);
+                    }
+
+                    let messageTime = document.createElement('div');
+                    messageTime.className = 'message-time';
+                    messageTime.appendChild(document.createTextNode(currentTime));
+                    
+                    if (data.i_am_sender) {
+                        // إنشاء span الخاص بالحالة
+                        const statusSpan = document.createElement('span');
+                        statusSpan.className = 'message-status status-sent';
+                        
+                        // إنشاء عنصر الأيقونة
+                        const icon = document.createElement('i');
+                        icon.className = 'fas fa-check';
+
+                        statusSpan.appendChild(icon);
+                        messageTime.appendChild(statusSpan);
+                    }
+
+                    // تركيب العناصر مع بعض
+                    messageBubble.appendChild(messageTime);
+                    messageElement = document.createElement('div');
+
+                    if (data.i_am_sender){
+                        messageDiv.className = 'message sent animated';
+                    }
+                    else {
+                        messageDiv.className = 'message received animated';
+                    }
+                    messageDiv.appendChild(messageBubble);
+                    messageDiv.setAttribute("message-id", data.message_id);
+                    document.querySelector("#chatMessages").appendChild(messageDiv);
+                    
+                    let typingIndicator = document.querySelector("#typingIndicator");
+                    if (typingIndicator) typingIndicator.remove();
+
+                    sending_message = chatMessages.querySelector(`[message-id="${data.sending_message_id}"]`);
+                    if( sending_message ) sending_message.remove();
+                    setTimeout(() => {
+                        messageDiv.classList.remove('animated');
+                    }, 300);
+
+                    chatMessages.appendChild(messageDiv);
+
+                    // Clear input and preview
+                    messageInput.style.height = 'auto';
+
+                    scrollToBottom();
+
+                    if (data.message_is_viewed) {
+                        let statusElement = messageDiv.querySelector('.message-status');
+                        statusElement.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+                        statusElement.className = 'message-status status-viewed';
+                    }
+                    else {
+                        let statusElement = messageDiv.querySelector('.message-status');
+                        statusElement.className = 'message-status status-delivered';
+                    }
+                }
+
+                else if(data.type == 'update_new_viewed_messages') {
+                    for(let message_id of data.messages_ids) {
+                        let messageDiv = document.querySelector(`[message-id="${message_id}"]`);
+                        if(messageDiv) {
+                            let messageStatus = messageDiv.querySelector(".message-status");
+                            if (messageStatus) {
+                                messageStatus.className = 'message-status status-viewed';
+                                messageStatus.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+                            }
+                        }
+                    }
+                }
+
+                else if(data.type == 'typing') {
+                    let chatMessages = document.querySelector("#chatMessages");
+                    let typingIndicator = document.querySelector("#typingIndicator");
+                    if (data.is_typing) {
+                        if (typingIndicator) typingIndicator.remove();
+                        const allMessages = document.querySelectorAll('.message');
+                        allMessages.forEach(msg => msg.classList.remove('animated'));
+                        chatMessages.innerHTML += `
+                            <div class="typing-indicator" id="typingIndicator" style="display: flex;">
+                                <div class="typing-dots">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                            </div>
+                        `;
+                        setTimeout(function(){
+                            if( document.querySelector("#typingIndicator") ) document.querySelector("#typingIndicator").remove();
+                        }, 2000);
+                    }
+                    scrollToBottom();
+                }
+            }
+        {% endif  %}
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            // Auto-scroll to bottom
+            scrollToBottom();
+            initializeDragAndDrop();
+            addEventListeners();
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('dropdownMenu');
+                const moreBtn = event.target.closest('.action-btn');
+                
+                if (!moreBtn && !dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        });
+
+        function goBack() {
+            const previousUrl = document.referrer;
+
+            if (previousUrl) {
+                window.location.href = previousUrl;
+            } else {
+                window.history.back();
+            }
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        function showDeleteConfirmation() {
+            const deleteModal = document.getElementById('deleteModal');
+            const dropdown = document.getElementById('dropdownMenu');
+            
+            dropdown.classList.remove('show');
+            deleteModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideDeleteConfirmation(e) {
+            e.preventDefault();
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function deleteConversation() {
+            // Show loading/deleting state
+            const deleteBtn = document.querySelector('.btn-delete');
+            const originalText = deleteBtn.textContent;
+            deleteBtn.textContent = 'Deleting...';
+            deleteBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                hideDeleteConfirmation(e);
+                showNotification('Conversation deleted successfully', 'success');
+                
+                // In a real app, you would redirect to the conversations list
+                // For demo purposes, we'll just clear the messages
+                setTimeout(() => {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = `
+                        <div class="message received">
+                            <div class="message-bubble">
+                                <div class="message-text">This conversation has been deleted.</div>
+                                <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                        </div>
+                    `;
+                    scrollToBottom();
+                }, 1000);
+                
+                // Reset button state
+                deleteBtn.textContent = originalText;
+                deleteBtn.disabled = false;
+            }, 1500);
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        let typingTimer;
+        let is_still_typing = false;
+
+
+        function autoResizeTextarea(textarea) {
+            if( !is_still_typing ){
+                is_still_typing = true;
+                clearTimeout(typingTimer);
+                {% if other_user %}
+                    chatSocket.send(JSON.stringify({
+                        type: "typing",
+                        is_typing: true,
+                    }));
+                {% endif %}
+
+                typingTimer = setTimeout(() => {
+                    is_still_typing = false;
+                }, 2000);
+            }
+        }
+
+        function uuidv4() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+              (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+            let base64Image = null;
+
+            if(!selectedFile && !messageText) return;
+
+            if (selectedFile) {
+                const file = selectedFile;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    base64Image = event.target.result;
+                    {% if other_user %}
+                        messageInput.value = '';
+                        let sending_message_id = uuidv4();
+                        chatSocket.send(JSON.stringify({
+                            type : 'chat',
+                            body_message : messageText,
+                            image_message : base64Image,
+                            file_name : file.name,
+                            sending_message_id : sending_message_id,
+                        }));
+
+                        removeImagePreview();
+
+                        chatMessages.innerHTML += `
+                            <div class="message sent" message-id="${sending_message_id}">
+                                <div class="message-bubble">
+                                    <img src="${URL.createObjectURL(file)}" alt="" class="message-image" onclick="openImageModal('${URL.createObjectURL(file)}')">
+                                    <div class="message-text"></div>
+                                    <div class="message-time">Sending..
+                                        <span class="message-status status-loading">
+                                            <i class="fa-solid fa-spinner"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        if( chatMessages.querySelector(`[message-id="${sending_message_id}"]`) ) {
+                            chatMessages.querySelector(`[message-id="${sending_message_id}"]`).querySelector('.message-text').textContent = messageText;
+                            ro.observe(chatMessages.querySelector(`[message-id="${sending_message_id}"]`).querySelector('img'));
+                        }
+                    {% endif %}
+                }
+                reader.readAsDataURL(selectedFile);
+            }
+
+            else {
+                {% if other_user %}
+                    messageInput.value = '';
+                    let sending_message_id = uuidv4();
+                    chatSocket.send(JSON.stringify({
+                        type : 'chat',
+                        body_message : messageText,
+                        image_message : null,
+                        sending_message_id : sending_message_id,
+                    }))
+                    
+                    chatMessages.innerHTML += `
+                        <div class="message sent" message-id="${sending_message_id}">
+                            <div class="message-bubble">
+                                <div class="message-text"></div>
+                                <div class="message-time">Sending..
+                                    <span class="message-status status-loading">
+                                        <i class="fa-solid fa-spinner"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    if( chatMessages.querySelector(`[message-id="${sending_message_id}"]`) ) {
+                        chatMessages.querySelector(`[message-id="${sending_message_id}"]`).querySelector('.message-text').textContent = messageText;
+                    }
+                {% endif %}
+            }
+            scrollToBottom();
+        }
+
+        function addDoctorMessage(text) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message received';
+            
+            const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${currentTime}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                showNotification('Please select an image file', 'error');
+                return;
+            }
+            
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('File size must be less than 5MB', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            showImagePreview(file);
+        }
+
+        function showImagePreview(file) {
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const previewName = document.getElementById('previewName');
+            const previewSize = document.getElementById('previewSize');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            previewName.textContent = file.name;
+            previewSize.textContent = formatFileSize(file.size);
+            imagePreview.style.display = 'block';
+
+            fixPreviewNameWidth();
+        }
+
+        function removeImagePreview() {
+            const imagePreview = document.getElementById('imagePreview');
+            const fileInput = document.getElementById('fileInput');
+            
+            imagePreview.style.display = 'none';
+            fileInput.value = '';
+            selectedFile = null;
+            
+            const messageInput = document.getElementById('messageInput');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function openImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            modalImage.src = src;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function initializeDragAndDrop() {
+            const chatContainer = document.querySelector('.chat-container');
+            
+            chatContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                chatContainer.style.background = 'rgba(37, 99, 235, 0.1)';
+            });
+            
+            chatContainer.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                chatContainer.style.background = '';
+            });
+            
+            chatContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                chatContainer.style.background = '';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        selectedFile = file;
+                        showImagePreview(file);
+                    } else {
+                        showNotification('Please drop an image file', 'error');
+                    }
+                }
+            });
+        }
+
+        function addEventListeners() {
+            // Close modal when clicking outside image
+            document.getElementById('imageModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeImageModal();
+                }
+            });
+            
+            // Close delete modal when clicking outside
+            document.getElementById('deleteModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideDeleteConfirmation(e);
+                }
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-weight: 500;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+
+    {% comment %} {% if other_user %} {% endcomment %}
+        {% include "chat/parts/online-status.html" %}
+    {% comment %} {% endif %} {% endcomment %}
+</body>
+</html>

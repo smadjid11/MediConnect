@@ -1,0 +1,102 @@
+{% if request.user.is_authenticated %}
+    <script>
+        const notificationSocket = new WebSocket(`ws://${window.location.host}/ws/notification`);
+
+        notificationSocket.onmessage = function(e) {
+            let data = JSON.parse(e.data);
+
+            if(data.type == 'connection') console.log(`notification status : ${data.status}`);
+
+            else if(data.type == 'received_message'){
+                console.log(data.status);
+                let header = document.querySelector('header');
+                // For All Pages Except chat.html
+                if(header) {
+                    // For Header Notification
+                    let notificationBadge = document.querySelector("#notification-badge");
+                    if(notificationBadge){
+                        document.querySelector("#notification-badge1").innerHTML = parseInt(notificationBadge.textContent) + 1;
+                        document.querySelector("#notification-badge2").innerHTML = parseInt(notificationBadge.textContent) + 1;
+                        notificationBadge.innerHTML = parseInt(notificationBadge.textContent) + 1;
+                    }
+                    else{
+                        const badge = document.createElement('span');
+                        badge.className = 'notification-badge';
+                        badge.id = 'notification-badge';
+                        badge.textContent = 1;
+                        
+                        const badge1 = document.createElement('span');
+                        badge1.className = 'notification-badge';
+                        badge1.id = 'notification-badge1';
+                        badge1.textContent = 1;
+
+                        const badge2 = document.createElement('span');
+                        badge2.className = 'notification-badge';
+                        badge2.id = 'notification-badge2';
+                        badge2.textContent = 1;
+
+                        document.querySelector("#settingsBtn").prepend(badge1);
+                        document.querySelector("#mobileMenuToggle").appendChild(badge2);
+                        document.querySelector("#message-dropdown-item").appendChild(badge);
+                    }
+                }
+
+                // Only For Messages Page
+                if(window.location.pathname == '/chat/messages') {
+                    const messagesList = document.querySelector("#messagesList");
+                    const userChat = messagesList.querySelector(`[user-id="${data.message_sender_id}"]`);
+                    if (userChat) {
+                        userChat.remove();
+                    }
+
+                    let messageItem = document.createElement('a');
+                    messageItem.href = `/chat/${data.chatroom_name}`;
+                    messageItem.className = 'message-item unread online';
+                    messageItem.setAttribute("user-id", data.message_sender_id);
+                    
+                    messageItem.innerHTML = `
+                        <div class="online-status"></div>
+                        <div class="message-header">
+                                <img src="${data.user_pfp_url}" alt="${data.user_fullname}" class="doctor-avatar">
+                            <div class="message-info">
+                                <h3 class="doctor-name">${data.user_fullname}</h3>
+                            </div>
+                            <div class="message-time">0 minutes</div>
+                        </div>
+                        
+                        <div class="message-status">
+                            <span class="unread-badge">New</span>
+                        </div>
+                    `;
+                    
+                    const messagePreview = document.createElement('p')
+                    messagePreview.className = 'message-preview';
+                    messagePreview.textContent = data.message;
+
+                    messageItem.insertBefore(messagePreview, messageItem.children[messageItem.children.length - 1]);
+
+                    {% comment %} messageItem.querySelector(".message-preview").textContent = data.message; {% endcomment %}
+
+                    if(data.user_speciality != null) {
+                        messageItem.querySelector('.message-info').innerHTML += `
+                            <p class="doctor-specialty">${ data.user_speciality }</p>
+                        `;
+                    }
+
+                    messagesList.prepend(messageItem);
+                }
+            }
+
+            else if(data.type == 'update_new_viewed_messages') {
+                console.log(`viewer id : ${data.viewer_id}`);
+                if(window.location.pathname == '/chat/messages') {
+                    let messagesList = document.querySelector("#messagesList");
+                    let userChatItem = messagesList.querySelector(`[user-id="${data.viewer_id}"]`);
+                    if(userChatItem && window.getComputedStyle(userChatItem.querySelector('.fa-check-double')).color == 'rgb(128, 128, 128)') {
+                        userChatItem.querySelector('.fa-check-double').style.color = '#10b981';
+                    }
+                }
+            }
+        }
+    </script>
+{% endif %}

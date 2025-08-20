@@ -1,0 +1,867 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    <title>Patient Reviews - MediConnect</title>
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            {% if request.user.is_anonymous %}padding-top: 70px;{% endif %}
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Page Header Section */
+        .page-header {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            padding: 30px 80px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .text-blue {
+            color: #2563eb;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding-bottom: 80px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .reviews-filter {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .review-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .quote-icon {
+            color: #93c5fd;
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .stars i {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        .review-text {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .patient-image {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .patient-details h4 {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            display: -webkit-box;       /* إنشاء صندوق مرن */
+            -webkit-line-clamp: 1;      /* عدد الأسطر المسموح بها */
+            -webkit-box-orient: vertical;
+            overflow: hidden;           /* إخفاء النص الزائد */
+            text-overflow: ellipsis;
+        }
+
+        .patient-condition {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .doctor-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .vote-section {
+            display: flex;
+            gap: 12px;
+        }
+
+        .vote-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 2px solid;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .vote-btn.agree {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .vote-btn.agree:hover,
+        .vote-btn.agree.voted {
+            background: #10b981;
+            color: white;
+        }
+
+        .vote-btn.disagree {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .vote-btn.disagree:hover,
+        .vote-btn.disagree.voted {
+            background: #ef4444;
+            color: white;
+        }
+
+        .vote-count {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .helpful-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .verified-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .reviews-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 24px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 30px 0 60px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            
+            .reviews-filter {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 8px;
+            }
+            
+            .filter-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            .reviews-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .review-card {
+                padding: 24px;
+            }
+            
+            .vote-section {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .vote-btn {
+                justify-content: center;
+                padding: 10px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .review-card {
+                padding: 20px;
+                margin: 0 4px;
+            }
+            
+            .patient-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .review-actions {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .helpful-indicator {
+                justify-content: center;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .review-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .review-card:nth-child(2n) {
+            animation-delay: 0.1s;
+        }
+
+        .review-card:nth-child(3n) {
+            animation-delay: 0.2s;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .vote-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Success feedback */
+        .vote-success {
+            background: #10b981;
+            color: white;
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-login {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+    </style>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">
+                Patient <span class="text-blue">Reviews</span>
+            </h1>
+            <p class="page-subtitle">
+                Read real experiences from patients who found quality healthcare through MediConnect. 
+                Your feedback helps us maintain the highest standards of care.
+            </p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ average_rating }}</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ reviews.count }}</div>
+                    <div class="stat-label">Total Reviews</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ satisfaction_rate }}%</div>
+                    <div class="stat-label">Satisfaction Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">What Our Patients Say</h2>
+            </div>
+            
+            <div class="reviews-grid" id="reviewsGrid">
+                {% if reviews %}
+                    {% for review in reviews|slice:":4" %}
+                        <!-- Review -->
+                        <div class="review-card" data-category="general">
+                            <div class="quote-icon">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <div class="stars">
+                                {% for _ in ""|center:review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <p class="review-text">
+                                "{{ review.comment }}"
+                            </p>
+                            <div class="patient-info">
+                                <img src="{% if review.patient.avatar %}{{ review.patient.avatar.url }}{% else %}{% static 'images/default-patient-pfp.jpg' %}{% endif %}" alt="{{ review.patient.user.first_name }}" class="patient-image">
+                                <div class="patient-details">
+                                    <h4>{{ review.patient.user.first_name }}</h4>
+                                    <p class="patient-condition">{{ review.created_at|timesince }}</p>
+                                </div>
+                            </div>
+                            <form method="POST" class="review-actions" onsubmit="handleVote(event, this)">
+                                {% csrf_token %}
+                                <input type="hidden" id="reviewId" name="reviewId" value="{{ review.id }}">
+                                <div class="vote-section">
+                                    <button type="submit" name="vote" value="agree" class="vote-btn agree {% if request.user.patientprofile in review.helpful.all %}voted vote-success{% endif %}">
+                                        <i class="fas fa-thumbs-up"></i>
+                                        <span>Helpful</span>
+                                        <span class="vote-count">{{ review.helpful.count }}</span>
+                                    </button>
+                                    <button type="submit" name="vote" value="disagree" class="vote-btn disagree {% if request.user.patientprofile in review.not_helpful.all %}voted{% endif %}">
+                                        <i class="fas fa-thumbs-down"></i>
+                                        <span>Not Helpful</span>
+                                        <span class="vote-count">{{ review.not_helpful.count }}</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <script>
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const reviewCards = document.querySelectorAll('.review-card');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.getAttribute('data-filter');
+                
+                reviewCards.forEach(card => {
+                    if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                        card.style.display = 'block';
+                        card.style.animation = 'fadeInUp 0.6s ease-out';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Vote handling functionality
+        function handleVote(event, form) {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+            const reviewId = formData.get("reviewId");
+            const vote = event.submitter.value;
+            const voteBtn = event.submitter;
+            const voteSection = form.querySelector('.vote-section');
+            
+            // Disable buttons during processing
+            const allBtns = voteSection.querySelectorAll('.vote-btn');
+            allBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('loading');
+            });
+
+            $.ajax({
+                url : '{% url "reviews" %}',
+                method : "POST",
+                headers : {
+                   'X-CSRFToken' : form.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                },
+                data : {
+                    'review_id' : reviewId,
+                    'vote' : vote,
+                },
+                success : function(response) {
+                    
+                    console.log(response.status);
+
+                    if (response.status2 === 'done') {
+                        // Remove loading state
+                        allBtns.forEach(btn => {
+                            btn.disabled = false;
+                            btn.classList.remove('loading');
+                        });
+
+                        if(response.status == 'helpful review added successfully !') {
+                            // Add voted class to clicked button
+                            voteBtn.classList.add('voted');
+                            voteBtn.classList.add('vote-success');
+                            voteBtn.parentElement.querySelector(".disagree").classList.remove('voted');
+                            // Update vote count
+                            let voteCount = voteBtn.querySelector('.vote-count');
+                            let currentCount = parseInt(voteCount.textContent);
+                            voteCount.textContent = currentCount + 1;
+                            // Update other vote count
+                            voteCount = voteBtn.parentElement.querySelector(".disagree").querySelector('.vote-count');
+                            currentCount = parseInt(voteCount.textContent);
+                            if (currentCount > 0) voteCount.textContent = currentCount - 1;
+                        }
+                        else if (response.status == 'helpful review removed successfully !') {
+                            // Remove voted class to clicked button
+                            voteBtn.classList.remove('voted');
+                            voteBtn.classList.remove('vote-success');
+                            // Update vote count
+                            let voteCount = voteBtn.querySelector('.vote-count');
+                            let currentCount = parseInt(voteCount.textContent);
+                            voteCount.textContent = currentCount - 1;
+                        }
+                        else if (response.status == 'not helpful review added successfully !') {
+                            // Add voted class to clicked button
+                            console.log(voteBtn);
+                            voteBtn.classList.add('voted');
+                            voteBtn.parentElement.querySelector(".agree").classList.remove('voted');
+                            voteBtn.parentElement.querySelector(".agree").classList.remove('vote-success');
+                            // Update vote count
+                            let voteCount = voteBtn.querySelector('.vote-count');
+                            let currentCount = parseInt(voteCount.textContent);
+                            voteCount.textContent = currentCount + 1;
+                            // Update other vote count
+                            voteCount = voteBtn.parentElement.querySelector(".agree").querySelector('.vote-count');
+                            currentCount = parseInt(voteCount.textContent);
+                            if(currentCount > 0) voteCount.textContent = currentCount - 1;
+                        }
+                        else if (response.status == 'not helpful review removed successfully !') {
+                            // Remove voted class to clicked button
+                            voteBtn.classList.remove('voted');
+                            // Update vote count
+                            let voteCount = voteBtn.querySelector('.vote-count');
+                            let currentCount = parseInt(voteCount.textContent);
+                            voteCount.textContent = currentCount - 1;
+                        }
+                        
+                        
+                        
+                        // Remove success animation after delay
+                        setTimeout(() => {
+                            voteBtn.classList.remove('vote-success');
+                        }, 300);
+                        
+                        // Show success message (optional)
+                        showNotification('Thank you for your feedback!', 'success');
+                    }
+
+                    else if (response.status2 === 'login transfer page') {
+                        window.location.href = '/login';
+                    }
+
+                    else if (response.status2 === 'show doctor alert') {
+                        console.log("asdasd");
+                        // Remove loading state
+                        allBtns.forEach(btn => {
+                            btn.disabled = false;
+                            btn.classList.remove('loading');
+                        });
+
+                        showNotification('your are not patient !', 'error');
+                    }
+                    
+                }
+            });
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            if (type == 'error') {
+                notification.innerHTML = `
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>${message}</span>
+                `;
+                
+                // Add notification styles
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 90px;
+                    right: 20px;
+                    background:rgb(185, 16, 16);
+                    color: white;
+                    padding: 16px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1001;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-weight: 500;
+                    animation: slideIn 0.3s ease-out;
+                `;
+            }
+
+            else {
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                `;
+                
+                // Add notification styles
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 90px;
+                    right: 20px;
+                    background: #10b981;
+                    color: white;
+                    padding: 16px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1001;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-weight: 500;
+                    animation: slideIn 0.3s ease-out;
+                `;
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add slide animations for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add entrance animations with staggered delay
+            const cards = document.querySelectorAll('.review-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Load more reviews functionality (placeholder)
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.textContent = 'Load More Reviews';
+            loadMoreBtn.id = 'loadMoreBtn';
+            loadMoreBtn.className = 'btn-login';
+            loadMoreBtn.style.cssText = `
+                display: block;
+                margin: 48px auto 0;
+                padding: 12px 32px;
+                font-size: 1rem;
+            `;
+            
+            loadMoreBtn.addEventListener('click', () => {
+                {% comment %} showNotification('Loading more reviews...', 'info'); {% endcomment %}
+                // Simulate loading delay
+                {% comment %} showNotification('No more reviews to load', 'info'); {% endcomment %}
+                
+                let reviewsGrid = document.querySelector("#reviewsGrid");
+                
+                let showed_reviews_number = reviewsGrid.children.length;
+
+                ajax_data = {
+                    showed_reviews_number : showed_reviews_number,
+                }
+
+                $.ajax({
+                    url : '{% url "reviews" %}',
+                    method : "GET",
+                    data : ajax_data,
+                    success : function(response) {
+                        console.log(response);
+                        if ( !response.more_reviews ){
+                            document.querySelector("#loadMoreBtn").remove();
+                        }
+                        csrf_token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                        review_objects = response.review_objects;
+                        for(let review of review_objects) {
+                            reviewsGrid.innerHTML += `
+                                <div class="review-card" data-category="general">
+                                    <div class="quote-icon">
+                                        <i class="fas fa-quote-left"></i>
+                                    </div>
+                                    <div class="stars">
+                                        ${'<i class="fas fa-star"></i>'.repeat(review.rating)}
+                                    </div>
+                                    <p class="review-text">
+                                        "${review.comment}"
+                                    </p>
+                                    <div class="patient-info">
+                                        <img src="${review.pfp_profile}" alt="${review.profile_name}" class="patient-image">
+                                        <div class="patient-details">
+                                            <h4>${review.profile_name}</h4>
+                                        </div>
+                                    </div>
+                                    <form method="POST" class="review-actions" onsubmit="handleVote(event, this)">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
+                                        <input type="hidden" id="reviewId" name="reviewId" value="${review.id}">
+                                        <div class="vote-section">
+                                            <button type="submit" name="vote" value="agree" class="vote-btn agree ${review.profile_voted_helpful ? 'voted vote-success' : ''}">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span>Helpful</span>
+                                                <span class="vote-count">${ review.helpful.length }</span>
+                                            </button>
+                                            <button type="submit" name="vote" value="disagree" class="vote-btn disagree ${review.profile_voted_not_helpful ? 'voted' : ''}">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span>Not Helpful</span>
+                                                <span class="vote-count">${review.not_helpful.length}</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            `;
+                        }
+                    },
+                });
+
+            });
+            
+            document.querySelector('.reviews-section .container').appendChild(loadMoreBtn);
+        });
+    </script>
+
+{% endblock %}

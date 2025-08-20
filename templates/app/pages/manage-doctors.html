@@ -1,0 +1,1298 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    <title>Manage Doctors - MediConnect</title>
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo {
+            background: #2563eb;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .nav-link.active {
+            color: #2563eb;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger {
+            width: 25px;
+            height: 3px;
+            background: #374151;
+            transition: all 0.3s;
+        }
+
+        /* Main Section */
+        .main-section {
+            padding: 20px 0 80px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .page-actions {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-add:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Doctors Grid */
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .doctor-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .doctor-info {
+            padding: 24px;
+        }
+
+        .doctor-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .doctor-specialty {
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .doctor-availability {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .doctor-availability.available {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .doctor-availability.unavailable {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .doctor-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-edit {
+            flex: 1;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-edit:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-delete {
+            flex: 1;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 0 24px 24px;
+        }
+
+        .avatar-upload {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .avatar-upload-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #2563eb;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .avatar-upload-container:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        .avatar-upload-icon {
+            color: white;
+            font-size: 24px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .form-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .form-checkbox:checked {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .form-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-save {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-save:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Delete Confirmation Modal */
+        .confirm-modal {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .confirm-modal {
+            transform: scale(1);
+        }
+
+        .confirm-header {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .confirm-icon {
+            width: 60px;
+            height: 60px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: #ef4444;
+            font-size: 24px;
+        }
+
+        .confirm-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .confirm-message {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-confirm-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm-delete:hover {
+            background: #dc2626;
+        }
+
+        .btn-confirm-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            color: #d1d5db;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .empty-message {
+            margin-bottom: 24px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: white;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 40px;
+                gap: 24px;
+                transition: left 0.3s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px);
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px);
+            }
+
+            .main-section {
+                padding: 20px 0 60px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .doctors-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .doctor-actions {
+                flex-direction: column;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-footer, .confirm-actions {
+                flex-direction: column;
+            }
+
+            .btn-save, .btn-cancel, .btn-confirm-delete, .btn-confirm-cancel {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .doctor-info {
+                padding: 20px;
+            }
+
+            .modal-content, .confirm-modal {
+                width: 95%;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
+    <!-- Main Section -->
+    <section class="main-section">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Manage Doctors</h1>
+                <p class="page-subtitle">Add, edit, and manage doctor profiles in the system</p>
+            </div>
+
+            <div class="page-actions">
+                <button class="btn-add" onclick="addDoctor()">
+                    <i class="fas fa-plus"></i>
+                    Add Doctor
+                </button>
+            </div>
+
+            <div class="doctors-grid" id="doctorsGrid">
+                {% for doctor_profile in doctors %}
+                    <!-- Available Doctor -->
+                    <div class="doctor-card" data-id="{{ doctor_profile.user.id }}" data-username="{{ doctor_profile.user.username }}" data-name="{{ doctor_profile.user.first_name }}" data-specialty="{{ doctor_profile.speciality }}" data-email="{{ doctor_profile.user.email }}" data-experience="{{ doctor_profile.years_of_experience }}" data-bio="{{ doctor_profile.bio }}" data-available="{% if doctor_profile.is_available %}true{% else %}false{% endif %}" data-image="{% if doctor_profile.avatar %} {{ doctor_profile.avatar.url }} {% else %} {% static 'images/default-doctor-pfp.jpg' %} {% endif  %}">
+                        
+                        <img src="{% if doctor_profile.avatar %} {{ doctor_profile.avatar.url }} {% else %} {% static 'images/default-doctor-pfp.jpg' %} {% endif  %}" alt="{{ doctor_profile.user.first_name }}" class="doctor-image">
+                        <div class="doctor-info">
+                            <h3 class="doctor-name">{{ doctor_profile.user.first_name }}</h3>
+                            <p class="doctor-specialty">{{ doctor_profile.speciality }}</p>
+                            {% if doctor_profile.is_available %}
+                                <div class="doctor-availability available">
+                                    <i class="fas fa-circle"></i>
+                                    Available
+                                </div>
+                            {% else %}
+                                <div class="doctor-availability unavailable">
+                                    <i class="fas fa-circle"></i>
+                                    Unavailable
+                                </div>
+                            {% endif %}
+                            <div class="doctor-actions">
+                                <button class="btn-edit" onclick="editDoctor({{ doctor_profile.user.id }})">
+                                    <i class="fas fa-edit"></i>
+                                    Edit
+                                </button>
+                                <button class="btn-delete" onclick="deleteDoctor({{ doctor_profile.user.id }}, '{{ doctor_profile.user.first_name }}')">
+                                    <i class="fas fa-trash"></i>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Edit Doctor Modal -->
+    <div class="modal-overlay" id="editModal">
+        <form method="POST" enctype="multipart/form-data" class="modal-content" id="DoctorForm">
+            {% csrf_token %}
+            <input type="hidden" name="type" value="edit" id="formType">
+
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Edit Doctor</h2>
+                <button class="modal-close" onclick="closeEditModal(event)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div>
+                    <div class="avatar-upload">
+                        <div class="avatar-upload-container">
+                            <img src="{% static 'default-doctor-pfp.jpg' %}" 
+                                 alt="Doctor Avatar Preview" class="avatar-preview" id="avatarPreview">
+                            <div class="avatar-upload-overlay" onclick="document.getElementById('avatarInput').click()">
+                                <i class="fas fa-camera avatar-upload-icon"></i>
+                            </div>
+                        </div>
+                        <input type="file" name="avatar" id="avatarInput" class="file-input" accept="image/*" onchange="previewAvatar(this)">
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="editDoctorName">Full Name</label>
+                            <input type="text" name="full_name" id="editDoctorName" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editDoctorUsername">Username</label>
+                            <input type="text" name="username" id="editDoctorUsername" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editSpecialty">Specialty</label>
+                            <select name="speciality" id="editSpecialty" class="form-select" required>
+                                {% for speciality in specialities %}
+                                    <option value="{{ speciality.name }}">{{ speciality.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editEmail">Email Address</label>
+                            <input type="email" name="email" id="editEmail" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editExperience">Years of Experience</label>
+                            <input type="number" name="years_of_experience" id="editExperience" class="form-input" min="0" max="50" required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label" for="editBio">Biography</label>
+                            <textarea name="bio" id="editBio" class="form-textarea" placeholder="Brief description about the doctor"></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="form-checkbox-group">
+                                <input type="checkbox" name="is_available" id="editAvailable" class="form-checkbox">
+                                <label class="checkbox-label" for="editAvailable">Is Available?</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeEditModal(event)">Cancel</button>
+                <button type="submit" class="btn-save" id="saveBtn">
+                    <span id="saveText">Save Changes</span>
+                    <div id="saveSpinner" class="loading-spinner" style="display: none;"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <form method="POST" class="modal-overlay" id="deleteModal">
+        {% csrf_token %}
+        <input type="hidden" name="type" value="delete">
+        <div class="confirm-modal">
+            <div class="confirm-header">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="confirm-title">Delete Doctor?</h3>
+                <p class="confirm-message">Are you sure you want to delete <strong id="doctorToDelete">this doctor</strong>? This action cannot be undone.</p>
+                <div class="confirm-actions">
+                    <button class="btn-confirm-cancel" onclick="closeDeleteModal(event)">Cancel</button>
+                    <button class="btn-confirm-delete" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        let currentEditingId = null;
+        let doctorToDeleteId = null;
+        let doctorForm = document.getElementById("DoctorForm");
+
+        // Add Doctor Function
+        function addDoctor() {
+            currentEditingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Doctor';
+            document.getElementById('saveText').textContent = 'Add Doctor';
+
+            if(doctorForm.querySelector('#formType').value == 'edit') doctorForm.querySelector('#formType').value = 'add';
+            
+            // Reset form
+            document.getElementById('DoctorForm').reset();
+            document.getElementById('avatarPreview').src = '{% static 'images/default-doctor-pfp.jpg' %}';
+
+            if( !doctorForm.querySelector("#password1") ) {
+                let password_inputs = `
+                    <div class="form-group">
+                        <label class="form-label" for="password1">Password</label>
+                        <input type="password" name="password1" id="password1" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password2">Confirm Password</label>
+                        <input type="password" name="password2" id="password2" class="form-input" required>
+                    </div>
+                `;
+
+                doctorForm.querySelector(".form-grid").children[5].insertAdjacentHTML("beforebegin", password_inputs);
+            }
+            
+            showEditModal();
+        }
+
+        // Edit Doctor Function
+        function editDoctor(id) {
+            currentEditingId = id;
+            
+            if(doctorForm.querySelector('#formType').value == 'add') doctorForm.querySelector('#formType').value = 'edit';
+
+            if(!doctorForm.querySelector("#inputDoctorId")) {
+                let inputDoctorId = document.createElement('input');
+                inputDoctorId.type = 'hidden';
+                inputDoctorId.name = 'doctor_id';
+                inputDoctorId.value = currentEditingId;
+                inputDoctorId.id = 'inputDoctorId';
+                doctorForm.prepend(inputDoctorId);
+            }
+            else {
+                doctorForm.querySelector("#inputDoctorId").value = currentEditingId;
+            }
+
+            document.getElementById('modalTitle').textContent = 'Edit Doctor';
+            document.getElementById('saveText').textContent = 'Save Changes';
+            
+            const doctorCard = document.querySelector(`.doctor-card[data-id="${id}"]`);
+            if (doctorCard) {
+                // Fill form with existing data
+                document.getElementById('editDoctorUsername').value = doctorCard.dataset.username;
+                document.getElementById('editDoctorName').value = doctorCard.dataset.name;
+                document.getElementById('editSpecialty').value = doctorCard.dataset.specialty;
+                document.getElementById('editEmail').value = doctorCard.dataset.email;
+                document.getElementById('editExperience').value = doctorCard.dataset.experience;
+                document.getElementById('editBio').value = doctorCard.dataset.bio;
+                document.getElementById('editAvailable').checked = doctorCard.dataset.available === 'true';
+                document.getElementById('avatarPreview').src = doctorCard.dataset.image;
+            }
+
+            if( doctorForm.querySelector("#password1") ) {
+                doctorForm.querySelector("#password1").parentElement.remove();
+                doctorForm.querySelector("#password2").parentElement.remove();
+            }
+            
+            showEditModal();
+        }
+
+        // Delete Doctor Function
+        function deleteDoctor(id, name) {
+            doctorToDeleteId = id;
+            document.getElementById('doctorToDelete').textContent = name;
+            showDeleteModal(id);
+        }
+
+        // Show/Hide Modals
+        function showEditModal() {
+            document.getElementById('editModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal(e) {
+            e.preventDefault();
+            document.getElementById('editModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            currentEditingId = null;
+        }
+
+        function showDeleteModal(id) {
+            let doctorToDeleteId = id;
+            let deleteModal = document.getElementById('deleteModal');
+            deleteModal.classList.add('show');
+            let doctorUserIdInput = deleteModal.querySelector('#doctorUserId');
+            if(!doctorUserIdInput) {
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'doctor_user_id';
+                input.value = doctorToDeleteId;
+                input.id = 'doctorUserId'
+                deleteModal.prepend(input);
+            }
+            else {
+                doctorUserIdInput.value = doctorToDeleteId;
+            }
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal(e) {
+            e.preventDefault();
+            document.getElementById('deleteModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            doctorToDeleteId = null;
+        }
+
+        // Avatar Preview Function
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Save Doctor Function
+        function saveDoctor() {
+            // Validate form
+            const name = document.getElementById('editDoctorName').value.trim();
+            const specialty = document.getElementById('editSpecialty').value;
+            const email = document.getElementById('editEmail').value.trim();
+            const experience = document.getElementById('editExperience').value;
+            const bio = document.getElementById('editBio').value.trim();
+            const available = document.getElementById('editAvailable').checked;
+            const avatarSrc = document.getElementById('avatarPreview').src;
+
+            if (!name || !specialty || !email || !experience) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Show loading state
+            const saveBtn = document.getElementById('saveBtn');
+            const saveText = document.getElementById('saveText');
+            const saveSpinner = document.getElementById('saveSpinner');
+            
+            saveBtn.disabled = true;
+            saveText.style.display = 'none';
+            saveSpinner.style.display = 'inline-block';
+
+            // Simulate API call
+            setTimeout(() => {
+                if (currentEditingId) {
+                    // Update existing doctor
+                    updateDoctorCard(currentEditingId, {
+                        name,
+                        specialty,
+                        email,
+                        experience,
+                        bio,
+                        available,
+                        image: avatarSrc
+                    });
+                } else {
+                    // Add new doctor
+                    const newId = Date.now(); // Simple ID generation
+                    addDoctorCard(newId, {
+                        name,
+                        specialty,
+                        email,
+                        experience,
+                        bio,
+                        available,
+                        image: avatarSrc
+                    });
+                }
+
+                // Reset loading state
+                saveBtn.disabled = false;
+                saveText.style.display = 'inline';
+                saveSpinner.style.display = 'none';
+
+                // Close modal
+                closeEditModal();
+
+                // Show success message
+                showNotification('Doctor saved successfully!', 'success');
+            }, 1500);
+        }
+
+        // Update Doctor Card
+        function updateDoctorCard(id, data) {
+            const doctorCard = document.querySelector(`.doctor-card[data-id="${id}"]`);
+            if (doctorCard) {
+                // Update data attributes
+                doctorCard.dataset.name = data.name;
+                doctorCard.dataset.specialty = data.specialty;
+                doctorCard.dataset.email = data.email;
+                doctorCard.dataset.experience = data.experience;
+                doctorCard.dataset.bio = data.bio;
+                doctorCard.dataset.available = data.available;
+                doctorCard.dataset.image = data.image;
+
+                // Update visual elements
+                doctorCard.querySelector('.doctor-image').src = data.image;
+                doctorCard.querySelector('.doctor-image').alt = data.name;
+                doctorCard.querySelector('.doctor-name').textContent = data.name;
+                doctorCard.querySelector('.doctor-specialty').textContent = data.specialty;
+                
+                const availabilityElement = doctorCard.querySelector('.doctor-availability');
+                if (data.available) {
+                    availabilityElement.className = 'doctor-availability available';
+                    availabilityElement.innerHTML = '<i class="fas fa-circle"></i> Available';
+                } else {
+                    availabilityElement.className = 'doctor-availability unavailable';
+                    availabilityElement.innerHTML = '<i class="fas fa-circle"></i> Unavailable';
+                }
+
+                // Update delete button onclick
+                doctorCard.querySelector('.btn-delete').setAttribute('onclick', `deleteDoctor(${id}, '${data.name}')`);
+            }
+        }
+
+        // Add New Doctor Card
+        function addDoctorCard(id, data) {
+            const doctorsGrid = document.getElementById('doctorsGrid');
+            const doctorCard = document.createElement('div');
+            doctorCard.className = 'doctor-card';
+            doctorCard.dataset.id = id;
+            doctorCard.dataset.name = data.name;
+            doctorCard.dataset.specialty = data.specialty;
+            doctorCard.dataset.email = data.email;
+            doctorCard.dataset.experience = data.experience;
+            doctorCard.dataset.bio = data.bio;
+            doctorCard.dataset.available = data.available;
+            doctorCard.dataset.image = data.image;
+
+            const availabilityClass = data.available ? 'available' : 'unavailable';
+            const availabilityText = data.available ? 'Available' : 'Unavailable';
+
+            doctorCard.innerHTML = `
+                <img src="${data.image}" alt="${data.name}" class="doctor-image">
+                <div class="doctor-info">
+                    <h3 class="doctor-name">${data.name}</h3>
+                    <p class="doctor-specialty">${data.specialty}</p>
+                    <div class="doctor-availability ${availabilityClass}">
+                        <i class="fas fa-circle"></i>
+                        ${availabilityText}
+                    </div>
+                    <div class="doctor-actions">
+                        <button class="btn-edit" onclick="editDoctor(${id})">
+                            <i class="fas fa-edit"></i>
+                            Edit
+                        </button>
+                        <button class="btn-delete" onclick="deleteDoctor(${id}, '${data.name}')">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            doctorsGrid.appendChild(doctorCard);
+        }
+
+        // Confirm Delete Function
+        function confirmDelete() {
+            if (doctorToDeleteId) {
+                const doctorCard = document.querySelector(`.doctor-card[data-id="${doctorToDeleteId}"]`);
+                if (doctorCard) {
+                    doctorCard.style.animation = 'fadeInUp 0.3s ease-out reverse';
+                    setTimeout(() => {
+                        doctorCard.remove();
+                        showNotification('Doctor deleted successfully!', 'success');
+                    }, 300);
+                }
+                closeDeleteModal();
+            }
+        }
+
+        // Show Notification Function
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#2563eb'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                font-weight: 500;
+                z-index: 10001;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                if (e.target.id === 'editModal') {
+                    closeEditModal();
+                } else if (e.target.id === 'deleteModal') {
+                    closeDeleteModal();
+                }
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+                closeDeleteModal();
+            }
+        });
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                showNotification('Logging out...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            }
+        }
+    </script>
+
+{% endblock %}

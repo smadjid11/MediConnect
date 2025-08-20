@@ -1,0 +1,45 @@
+{% load static %}
+{% load hasattr_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+        <title>MediConnect</title>
+    {% endblock %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="{% static 'icon.png' %}">
+</head>
+<body>
+    {% include "app/parts/header.html" %}
+    
+    {% block content %}
+    
+    {% endblock %}
+
+    {% if request.user.is_authenticated and request.user|has_attr:"patientprofile" %}
+        {% include "app/parts/review.html" %}
+    {% endif %}
+
+    {% include "app/parts/footer.html" %}
+
+    <!-- Popup -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "success" %}
+                <!-- Success Popup -->
+                {% include 'app/parts/pop-up/success-message.html' with message=message.message %}
+            {% elif message.tags == "error" %}
+                <!-- Error Popup -->
+                {% include 'app/parts/pop-up/error-message.html' with message=message.message %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% include "chat/parts/online-status.html" %}
+    
+    {% include "chat/parts/notification.html" %}
+</body>
+</html>

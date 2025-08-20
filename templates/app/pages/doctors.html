@@ -1,0 +1,952 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>MediConnect - Doctors</title>
+{% endblock %}
+
+{% block content %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            {% if request.user.is_anonymous %}padding-top: 70px;{% endif %}
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo {
+            background: #2563eb;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .nav-link.active {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .btn-login {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger {
+            width: 25px;
+            height: 3px;
+            background: #374151;
+            transition: all 0.3s;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            padding: 50px 0 0;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Search Section */
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+            margin-top: 20px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 63%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 18px;
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 90%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 100;
+            margin-top: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .search-suggestions.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .suggestion-item:hover {
+            background: #f8fafc;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .suggestion-info h4 {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .suggestion-info p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Doctors Grid */
+        .doctors-section {
+            padding: 40px 0 0px;
+        }
+
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .doctor-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .doctor-image {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .doctor-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .doctor-card:hover .doctor-image img {
+            transform: scale(1.05);
+        }
+
+        .available-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #10b981;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .unavailable-badge {
+            background: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .doctor-info {
+            padding: 24px;
+        }
+
+        .doctor-name {
+            width: fit-content;
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 6px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .doctor-name::after {
+            background-color: #111827;
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            top: 90%;
+            left: 0;
+            transition: .3s ease;
+        }
+        .doctor-name:hover::after {
+            width: 100%;
+        }
+
+        .doctor-specialty {
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .doctor-experience {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .doctor-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .stars i {
+            color: #fbbf24;
+            font-size: 0.875rem;
+        }
+
+        .rating-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .doctor-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-chat {
+            flex: 1;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .btn-chat:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .btn-profile {
+            flex: 1;
+            background: white;
+            color: #2563eb;
+            border: 2px solid #2563eb;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .btn-profile:hover {
+            background: #2563eb;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-chat.unavailable {
+            background: #e5e7eb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .btn-chat.unavailable:hover {
+            transform: none;
+        }
+
+        .btn-profile.unavailable {
+            border-color: #e5e7eb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .btn-profile.unavailable:hover {
+            background: white;
+            color: #6b7280;
+            transform: none;
+        }
+
+        /* Load More Button */
+        .load-more-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .btn-load-more {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-load-more:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-load-more:disabled {
+            background: #e5e7eb;
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 48px 0 24px;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 32px;
+        }
+
+        .footer-brand .nav-brand .logo {
+            background: #2563eb;
+        }
+
+        .footer-brand .brand-name {
+            color: white;
+        }
+
+        .footer-description {
+            color: #9ca3af;
+            margin-top: 16px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-list {
+            list-style: none;
+        }
+
+        .footer-list li {
+            margin-bottom: 8px;
+        }
+
+        .footer-list a {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-list a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-link {
+            background: #374151;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 24px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: #9ca3af;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+            
+            .doctors-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: white;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 40px;
+                gap: 24px;
+                transition: left 0.3s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px);
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px);
+            }
+            
+            .page-header {
+                padding: 100px 0 40px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .search-section {
+                padding: 20px 0;
+            }
+            
+            .doctors-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .doctor-buttons {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .doctor-card {
+                margin: 0 8px;
+            }
+            
+            .search-input {
+                padding: 14px 16px 14px 44px;
+            }
+            
+            .search-icon {
+                left: 14px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .doctor-card {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .doctor-card:nth-child(1) { animation-delay: 0.1s; }
+        .doctor-card:nth-child(2) { animation-delay: 0.2s; }
+        .doctor-card:nth-child(3) { animation-delay: 0.3s; }
+        .doctor-card:nth-child(4) { animation-delay: 0.4s; }
+        .doctor-card:nth-child(5) { animation-delay: 0.5s; }
+        .doctor-card:nth-child(6) { animation-delay: 0.6s; }
+
+        #doctor-name {
+            text-decoration: none;
+        }
+    </style>
+
+    
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Our Certified Doctors</h1>
+            <p class="page-subtitle">
+                Choose from the best certified doctors in various medical specialties and get instant consultation
+            </p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search for a doctor by name or specialty..." id="searchInput" autocomplete="off">
+                    
+                    <div class="search-suggestions" id="searchSuggestions">
+                        {% for doctor in doctors %}
+                            <a href="{% url 'doctor-profile' doctor.user.username %}" class="suggestion-item" data-doctor="sarah-johnson">
+                                <img src="{{ doctor.avatar.url }}" alt="{{ doctor.user.first_name }}" class="suggestion-avatar">
+                                <div class="suggestion-info">
+                                    <h4>{{ doctor.user.first_name }}</h4>
+                                    <p>{{ doctor.speciality.name }}</p>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Doctors Section -->
+    <section class="doctors-section">
+        <div class="container">
+            <div class="doctors-grid" id="doctorsGrid">
+                <!-- availabe Doctor Card -->
+                {% for doctor in doctors|slice:":1" %}
+                    <div class="doctor-card" data-id="{{ doctor.id }}">
+                        <div class="doctor-image">
+                            <img src="{{ doctor.avatar.url }}" alt="{{ doctor.user.first_name }}">
+                            <div class="available-badge">Available Now</div>
+                        </div>
+                        <div class="doctor-info">
+                            <a href="{% url 'doctor-profile' doctor.user.username %}" id="doctor-name"><h3 class="doctor-name">{{ doctor.user.first_name }}</h3></a>
+                            <p class="doctor-specialty">{{ doctor.speciality }}</p>
+                            <p class="doctor-experience">{{ doctor.years_of_experience }} years experience</p>
+                            {% comment %} <div class="doctor-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="rating-text">4.8 (94 reviews)</span>
+                            </div> {% endcomment %}
+                            <div class="doctor-buttons">
+                                <a href="{% url 'start-chat' doctor.user.username %}" class="btn-chat">
+                                    <i class="fas fa-comments"></i>
+                                    Chat Now
+                                </a>
+                                <a href="{% url 'doctor-profile' doctor.user.username %}" class="btn-profile">
+                                    <i class="fas fa-user"></i>
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- unavailabe Doctor Card 3 -->
+                {% comment %} <div class="doctor-card" data-id="">
+                    <div class="doctor-image">
+                        <img src="https://images.unsplash.com/photo-1594824811330-1e5c3e8e4e82?auto=format&fit=crop&w=400&q=80" alt="Dr. Emily Rodriguez">
+                        <div class="available-badge unavailable-badge">Unavailable</div>
+                    </div>
+                    <div class="doctor-info">
+                        <h3 class="doctor-name">Dr. Emily Rodriguez</h3>
+                        <p class="doctor-specialty">Pediatrics</p>
+                        <p class="doctor-experience">10 years experience</p>
+                        <div class="doctor-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-text">4.9 (156 reviews)</span>
+                        </div>
+                        <div class="doctor-buttons">
+                            <button class="btn-chat unavailable" disabled>
+                                <i class="fas fa-comments"></i>
+                                Unavailable
+                            </button>
+                            <button class="btn-profile unavailable" disabled>
+                                <i class="fas fa-user"></i>
+                                View Profile
+                            </button>
+                        </div>
+                    </div>
+                </div> {% endcomment %}
+
+            </div>
+            
+            {% if doctors|length > 1 %}
+                <div class="load-more-container" id="load-more-container">
+                    <button class="btn-load-more" id="loadMoreBtn">
+                        <span class="btn-text">Load More Doctors</span>
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                        <i class="fas fa-arrow-down" id="arrowIcon"></i>
+                    </button>
+                </div>
+
+                <script>
+                    // Load more button functionality
+                    const loadMoreBtn = document.getElementById('loadMoreBtn');
+                    const loadingSpinner = document.getElementById('loadingSpinner');
+                    const arrowIcon = document.getElementById('arrowIcon');
+                    const btnText = document.querySelector('.btn-text');
+
+                    loadMoreBtn.addEventListener('click', () => {
+                        loadingSpinner.style.display = 'block';
+                        arrowIcon.style.display = 'none';
+                        btnText.textContent = 'Loading...';
+                        loadMoreBtn.disabled = true;
+                        
+                        $.ajax({
+                            url : "{% url 'doctors' %}",
+                            method : 'GET',
+                            data : {
+                                type : 'load_more',
+                                last_doctor_id : $("#doctorsGrid").find('[data-id]').last().attr("data-id"),
+                            },
+                            success : function(response) {
+                                //console.log(response);
+                                doctors = response.doctors;
+                                if (!response.still_more) $("#load-more-container").remove();
+                                for(let doctor of doctors) {
+                                    $("#doctorsGrid").append(`
+                                        <div class="doctor-card" data-id="${doctor.id}">
+                                            <div class="doctor-image">
+                                                <img src="${doctor.pfp_profile}" alt="{{ doctor.user.first_name }}">
+                                                <div class="available-badge">Available Now</div>
+                                            </div>
+                                            <div class="doctor-info">
+                                                <a href="/doctor=${doctor.username}" id="doctor-name"><h3 class="doctor-name">${doctor.full_name}</h3></a>
+                                                <p class="doctor-specialty">${doctor.speciality}</p>
+                                                <p class="doctor-experience">${doctor.years_of_experience} years experience</p>
+                                                <div class="doctor-buttons">
+                                                    <a href="/chat/start-chat/${doctor.username}" class="btn-chat">
+                                                        <i class="fas fa-comments"></i>
+                                                        Chat Now
+                                                    </a>
+                                                    <a href="/doctor=${doctor.username}" class="btn-profile">
+                                                        <i class="fas fa-user"></i>
+                                                        View Profile
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `);
+                                }
+                                // Return Load More Button Default State
+                                loadingSpinner.style.display = 'none';
+                                arrowIcon.style.display = 'block';
+                                btnText.textContent = 'Load More Doctors';
+                                loadMoreBtn.disabled = false;
+                            }
+                        });
+                    });
+                </script>
+            {% endif %}
+
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+
+        searchInput.addEventListener('focus', () => {
+            searchSuggestions.classList.add('active');
+        });
+
+        $(document).on('click', function(e) {
+            const $searchSuggestions = $('#searchSuggestions');
+            const $searchInput = $('#searchInput');
+        
+            // إذا كانت الضغطة خارج الـ popup
+            // وأيضًا input البحث لا يحتوي على focus
+            if (
+                !$searchSuggestions.is(e.target) &&
+                !$searchInput.is(':focus')
+            ) {
+                searchSuggestions.classList.remove('active');
+            }
+        });
+
+        $(searchInput).on('input', function() {
+            $.ajax({
+                url : "{% url 'doctors' %}",
+                method : 'GET',
+                data : {
+                    type : 'search',
+                    query : $(this).val(),
+                },
+                success : function(response) {
+                    console.log(response);
+                    let doctors = response.data;
+                    searchSuggestions.innerHTML = '';
+                    for(doctor of doctors) {
+                        searchSuggestions.innerHTML += `
+                            <a href="/doctor=${doctor.username}" class="suggestion-item" data-doctor="${doctor.full_name}">
+                                    <img src="${doctor.avatar}" alt="${doctor.full_name}" class="suggestion-avatar">
+                                    <div class="suggestion-info">
+                                        <h4>${doctor.full_name}</h4>
+                                        <p>${doctor.speciality}</p>
+                                    </div>
+                            </a>
+                        `;
+                    }
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                navMenu.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+    </script>
+{% endblock %}

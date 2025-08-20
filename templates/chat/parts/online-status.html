@@ -1,0 +1,56 @@
+{% if request.user.is_authenticated %}
+    <script>
+        const onlineSocket = new WebSocket(`ws://${window.location.host}/ws/online_status`);
+
+        onlineSocket.onmessage = function(e) {
+            let data = JSON.parse(e.data);
+
+            if (data.type == 'connection') console.log(`online status : ${data.status}`);
+
+            else if(data.type == 'update-online-status') {
+                console.log(data);
+                // For Update Online Chat Room Status
+                let userStatus = document.querySelector("#doctorStatus");
+                if(userStatus && userStatus.getAttribute("user-id") == data.user_new_status_id) {
+                    let onlineIndicator = document.querySelector("#onlineIndicator");
+                    if(data.status == 'disconnected') {
+                        userStatus.innerHTML = 'Offline';
+                        userStatus.style.color = '#b91010';
+                        onlineIndicator.style.background = '#b91010';
+                        onlineIndicator.style.animation = 'none';
+                    }
+                    else {
+                        userStatus.innerHTML = 'Online';
+                        userStatus.style.color = '#10b981';
+                        onlineIndicator.style.background = '#10b981';
+                        onlineIndicator.style.animation = 'pulse 2s infinite';
+                    }
+                }
+                // For Update Online Messages Page Status
+                if(window.location.pathname == '/chat/messages') {
+                    if(data.status == 'connected') {
+                        let messagesList = document.querySelector('#messagesList');
+                        let onlineUserItem = messagesList.querySelector(`[user-id="${data.user_new_status_id}"]`);
+                        console.log('onlineUserItem :');
+                        console.log(onlineUserItem);
+                        if(onlineUserItem && !onlineUserItem.classList.contains('online')) {
+                            onlineUserItem.classList.add('online');
+                            let onlineStatus = document.createElement('div');
+                            onlineStatus.className = 'online-status';
+                            onlineUserItem.prepend(onlineStatus);
+                        }
+                    }
+                    else {
+                        console.log("ASDASD");
+                        let messagesList = document.querySelector('#messagesList');
+                        let onlineUserItem = messagesList.querySelector(`[user-id="${data.user_new_status_id}"]`);
+                        if(onlineUserItem && onlineUserItem.classList.contains('online')) {
+                            onlineUserItem.classList.remove('online');
+                            onlineUserItem.querySelector('.online-status').remove();
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+{% endif %}

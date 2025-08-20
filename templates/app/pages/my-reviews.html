@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    <title>MediConnect - My Reviews</title>
+{% endblock %}
+
+{% block content %}
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .text-blue {
+            color: #2563eb;
+        }
+
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .review-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .quote-icon {
+            color: #93c5fd;
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .stars i {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        .review-text {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .patient-image {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .patient-details h4 {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .patient-condition {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .review-meta {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .doctor-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .verified-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #fef2f2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .modal-message {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-confirm {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-confirm:hover {
+            background: #dc2626;
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .delete-btn {
+            background: #9ca3af;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .reviews-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .reviews-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .review-card {
+                padding: 24px;
+            }
+
+            .modal {
+                padding: 24px;
+                margin: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .review-card {
+                padding: 20px;
+                margin: 0 4px;
+            }
+            
+            .patient-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .review-actions {
+                justify-content: center;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .btn-cancel,
+            .btn-confirm {
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        .removing {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+    </style>
+
+    <div class="container" style="margin: 20px 0;">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                My <span class="text-blue">Reviews</span>
+            </h1>
+            <p class="page-subtitle">
+                Manage all your reviews.
+            </p>
+        </div>
+
+        <!-- Reviews Grid -->
+        <div class="reviews-grid" id="reviewsGrid">
+            {% for review in my_reviews %}
+                <!-- Review Card -->
+                <div class="review-card" data-review-id="{{ review.id }}">
+                    <div class="quote-icon">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <div class="stars">
+                        {% for _ in ""|center:review.rating %}
+                            <i class="fas fa-star"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="review-text">
+                        "{{ review.comment }}"
+                    </p>
+                    <div class="patient-info">
+                        {% if review.patient.avatar %}
+                            <img src="{{ review.patient.avatar.url }}" alt="{{ review.patient.user.first_name }}" class="patient-image">
+                        {% else %}
+                            <img src="{% static 'images/default-patient-pfp.jpg' %}" alt="{{ review.patient.user.first_name }}" class="patient-image">
+                        {% endif %}
+                        <div class="patient-details">
+                            <h4>{{ review.patient.user.first_name }}</h4>
+                        </div>
+                    </div>
+                    <div class="review-meta">
+                        <span>{{ review.created_at|timesince }}</span>
+                    </div>
+                    <div class="review-actions">
+                        <button class="delete-btn" onclick="confirmDelete({{ review.id }}, '{{ review.patient.user.first_name }}')">
+                            <i class="fas fa-trash"></i>
+                            Delete Review
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <form method="POST" class="modal-overlay" id="deleteModal">
+        {% csrf_token %}
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="modal-title">Delete Review</h3>
+                <p class="modal-message">
+                    Are you sure you want to delete the review from <strong id="patientName"></strong>? This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal(event)">Cancel</button>
+                <button class="btn-confirm">Delete Review</button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        let currentReviewId = null;
+        let deleteModal = document.querySelector("#deleteModal");
+
+        function confirmDelete(reviewId, patientName) {
+            currentReviewId = reviewId;
+            document.getElementById('patientName').textContent = patientName;
+            if( !deleteModal.querySelector("#reviewInputId") ) {
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'review_id';
+                input.value = currentReviewId;
+                input.id = 'reviewInputId';
+                deleteModal.prepend(input);
+            }
+            else {
+                deleteModal.querySelector("#reviewInputId").value = currentReviewId;
+            }
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeModal(e) {
+            e.preventDefault();
+            document.getElementById('deleteModal').classList.remove('active');
+            currentReviewId = null;
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initialize page with staggered animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.review-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+
+{% endblock %}

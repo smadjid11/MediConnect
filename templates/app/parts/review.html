@@ -1,0 +1,704 @@
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #333;
+            background-color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo {
+            background: #2563eb;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .btn-login {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .text-blue {
+            color: #2563eb;
+        }
+
+        /* Fixed Review Button */
+        .review-btn-fixed {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .review-btn-fixed:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Review Popup Overlay */
+        .review-popup-overlay {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .review-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Review Popup */
+        .review-popup {
+            background: white;
+            border-radius: 20px 0 0 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.7) translateY(50px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .review-popup-overlay.active .review-popup {
+            transform: scale(1) translateY(0);
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .popup-review-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .popup-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .popup-review-content {
+            padding: 32px 24px 24px;
+        }
+
+        /* Star Rating */
+        .rating-section {
+            margin-bottom: 28px;
+        }
+
+        .rating-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .star {
+            font-size: 2rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .star:hover {
+            transform: scale(1.1);
+        }
+
+        .star.active {
+            color: #fbbf24;
+        }
+
+        .star.hover {
+            color: #fbbf24;
+        }
+
+        .rating-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6b7280;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Comment Section */
+        .comment-section {
+            margin-bottom: 28px;
+        }
+
+        .comment-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .comment-textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .char-count.warning {
+            color: #f59e0b;
+        }
+
+        .char-count.error {
+            color: #ef4444;
+        }
+
+        /* Submit Button */
+        .submit-section {
+            text-align: center;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            min-width: 150px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .review-btn-fixed {
+                bottom: 20px;
+                left: 20px;
+                width: 56px;
+                height: 56px;
+                font-size: 22px;
+            }
+
+            .review-popup {
+                width: 95%;
+                margin: 20px;
+            }
+
+            .popup-header {
+                padding: 20px;
+            }
+
+            .popup-review-content {
+                padding: 24px 20px 20px;
+            }
+
+            .star {
+                font-size: 1.8rem;
+            }
+
+            .star-rating {
+                gap: 6px;
+            }
+
+            .comment-textarea {
+                min-height: 100px;
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .popup-review-title {
+                font-size: 1.3rem;
+            }
+
+            .star {
+                font-size: 1.6rem;
+            }
+
+            .btn-submit {
+                width: 100%;
+                padding: 14px;
+            }
+        }
+
+        /* Animation Classes */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in-up {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        /* Custom Scrollbar */
+        .review-popup::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .review-popup::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .review-popup::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .review-popup::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+
+    <!-- Fixed Review Button -->
+    <button class="review-btn-fixed" data-tooltip="Leave a Review" id="reviewBtn">
+        <i class="fas fa-star"></i>
+    </button>
+
+    <!-- Review Popup Overlay -->
+    <div class="review-popup-overlay" id="reviewPopup">
+        <div class="review-popup">
+            <div class="popup-header">
+                <h2 class="popup-review-title">Rate Your Experience</h2>
+                <p class="popup-subtitle">Help us improve our service</p>
+                <button class="close-btn" id="closeBtn" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="popup-review-content">
+                <!-- Form with POST method -->
+                <form method="POST" action="{% url 'submit-review' %}" id="reviewForm" method="POST">
+                    {% csrf_token %}
+                    <!-- Hidden input for star rating value -->
+                    <input type="hidden" id="ratingValue" name="rating" value="0">
+                    <input type="hidden" name="path" value="{{ request.get_full_path }}">
+                    
+                    <!-- Star Rating Section -->
+                    <div class="rating-section">
+                        <label class="rating-label">How would you rate MediConnect?</label>
+                        <div class="star-rating" id="starRating">
+                            <i class="fas fa-star star" data-rating="1"></i>
+                            <i class="fas fa-star star" data-rating="2"></i>
+                            <i class="fas fa-star star" data-rating="3"></i>
+                            <i class="fas fa-star star" data-rating="4"></i>
+                            <i class="fas fa-star star" data-rating="5"></i>
+                        </div>
+                        <div class="rating-text" id="ratingText"></div>
+                    </div>
+
+                    <!-- Comment Section -->
+                    <div class="comment-section">
+                        <label for="reviewComment" class="comment-label">Tell us about your experience (Optional)</label>
+                        <textarea 
+                            id="reviewComment" 
+                            name="comment"
+                            class="comment-textarea" 
+                            placeholder="Share details about your experience with MediConnect. What did you like most? Any suggestions for improvement?"
+                            maxlength="500"
+                        ></textarea>
+                    </div>
+
+                    <!-- Submit Section -->
+                    <div class="submit-section">
+                        <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                            <i class="fas fa-paper-plane"></i> Post Review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const reviewBtn = document.getElementById('reviewBtn');
+        const reviewPopup = document.getElementById('reviewPopup');
+        const closeBtn = document.getElementById('closeBtn');
+        const reviewForm = document.getElementById('reviewForm');
+        const starRating = document.getElementById('starRating');
+        const ratingText = document.getElementById('ratingText');
+        const ratingValue = document.getElementById('ratingValue');
+        const reviewComment = document.getElementById('reviewComment');
+        const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const stars = document.querySelectorAll('.star');
+
+        let selectedRating = 0;
+
+        // Rating messages
+        const ratingMessages = {
+            1: "Poor - We're sorry to hear that",
+            2: "Fair - We'll work to improve",
+            3: "Good - Thanks for your feedback",
+            4: "Very Good - We're glad you liked it",
+            5: "Excellent - Thank you so much!"
+        };
+
+        // Open review popup
+        reviewBtn.addEventListener('click', () => {
+            reviewPopup.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Close review popup
+        const closeReviewPopup = () => {
+            reviewPopup.classList.remove('active');
+            document.body.style.overflow = '';
+            resetForm();
+        };
+
+        closeBtn.addEventListener('click', closeReviewPopup);
+
+        // Close popup when clicking outside
+        reviewPopup.addEventListener('click', (e) => {
+            if (e.target === reviewPopup) {
+                closeReviewPopup();
+            }
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && reviewPopup.classList.contains('active')) {
+                closeReviewPopup();
+            }
+        });
+
+        // Star rating functionality
+        stars.forEach((star, index) => {
+            // Hover effect
+            star.addEventListener('mouseenter', () => {
+                highlightStars(index + 1, 'hover');
+            });
+
+            // Click to select rating
+            star.addEventListener('click', () => {
+                selectedRating = index + 1;
+                highlightStars(selectedRating, 'active');
+                ratingText.textContent = ratingMessages[selectedRating];
+                
+                // Update hidden input value
+                ratingValue.value = selectedRating;
+                
+                updateSubmitButton();
+            });
+        });
+
+        // Remove hover effect when leaving star rating area
+        starRating.addEventListener('mouseleave', () => {
+            highlightStars(selectedRating, 'active');
+        });
+
+        // Highlight stars function
+        function highlightStars(rating, className) {
+            stars.forEach((star, index) => {
+                star.classList.remove('active', 'hover');
+                if (index < rating) {
+                    star.classList.add(className);
+                }
+            });
+        }
+
+        // Character count for textarea
+        {% comment %} reviewComment.addEventListener('input', () => {
+            const length = reviewComment.value.length;
+            const maxLength = 500;
+            charCount.textContent = `${length}/${maxLength} characters`;
+            
+            // Change color based on character count
+            charCount.classList.remove('warning', 'error');
+            if (length > maxLength * 0.8) {
+                charCount.classList.add('warning');
+            }
+            if (length > maxLength * 0.95) {
+                charCount.classList.add('error');
+            }
+        }); {% endcomment %}
+
+        // Update submit button state
+        function updateSubmitButton() {
+            submitBtn.disabled = selectedRating === 0;
+        }
+
+        // Reset form function
+        function resetForm() {
+            selectedRating = 0;
+            ratingValue.value = 0;
+            highlightStars(0, 'active');
+            ratingText.textContent = '';
+            reviewComment.value = '';
+            charCount.textContent = '0/500 characters';
+            charCount.classList.remove('warning', 'error');
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post Review';
+            submitBtn.disabled = true;
+        }
+
+        // Accessibility improvements
+        stars.forEach((star, index) => {
+            star.setAttribute('tabindex', '0');
+            star.setAttribute('role', 'button');
+            star.setAttribute('aria-label', `Rate ${index + 1} star${index > 0 ? 's' : ''}`);
+            
+            // Keyboard navigation for stars
+            star.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    star.click();
+                }
+            });
+        });
+
+        // Handle focus for accessibility
+        reviewPopup.addEventListener('keydown', (e) => {
+            const focusableElements = reviewPopup.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstFocusableElement = focusableElements[0];
+            const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+            if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusableElement) {
+                        lastFocusableElement.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusableElement) {
+                        firstFocusableElement.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+
+        // Auto focus first star when popup opens
+        reviewBtn.addEventListener('click', () => {
+            setTimeout(() => {
+                stars[0].focus();
+            }, 300);
+        });
+
+        // Smooth animations
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.slide-in-up');
+                elements.forEach((el, index) => {
+                    el.style.animationDelay = `${index * 0.2}s`;
+                });
+            }, 100);
+        });
+    </script>
+
+{% endblock %}
