@@ -1,6 +1,6 @@
 {% if request.user.is_authenticated %}
     <script>
-        const onlineSocket = new WebSocket(`ws://${window.location.host}/ws/online_status`);
+        const onlineSocket = new WebSocket(`wss://${window.location.host}/ws/online_status`);
 
         onlineSocket.onmessage = function(e) {
             let data = JSON.parse(e.data);
