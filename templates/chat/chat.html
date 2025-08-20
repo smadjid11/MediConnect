@@ -958,7 +958,7 @@
         });
 
         {% if other_user %}
-            const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chatroom/{{chatroom.chatroom_name}}`);
+            const chatSocket = new WebSocket(`wss://${window.location.host}/ws/chatroom/{{chatroom.chatroom_name}}`);
 
             chatSocket.onmessage = function(e) {
                 let data = JSON.parse(e.data);
