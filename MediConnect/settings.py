@@ -18,10 +18,10 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['localhost', '192.168.1.4', 'mediconnect-914s.onrender.com']
+ALLOWED_HOSTS = ['localhost', '192.168.1.4', 'mediconnect-brh8.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://mediconnect-914s.onrender.com',
+    'https://mediconnect-brh8.onrender.com',
 ]
 
 
