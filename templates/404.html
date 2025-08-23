@@ -1,0 +1,772 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>MediConnect - Page Not Found</title>
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo {
+            background: #2563eb;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .btn-login {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger {
+            width: 25px;
+            height: 3px;
+            background: #374151;
+            transition: all 0.3s;
+        }
+
+        /* 404 Section */
+        .error-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 150px 0 80px;
+            min-height: 100vh;
+        }
+
+        .error-content {
+            text-align: center;
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .error-number {
+            font-size: 8rem;
+            font-weight: 700;
+            color: #2563eb;
+            line-height: 1;
+            margin-bottom: 24px;
+            text-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+            animation: bounce 2s infinite;
+        }
+
+        .error-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .error-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .error-description {
+            font-size: 1rem;
+            color: #9ca3af;
+            margin-bottom: 48px;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            text-decoration: none;
+            margin-right: 16px;
+            margin-bottom: 16px;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2563eb;
+            border: 2px solid #2563eb;
+            padding: 14px 30px;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            text-decoration: none;
+            margin-bottom: 16px;
+        }
+
+        .btn-secondary:hover {
+            background: #2563eb;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .error-illustration {
+            margin-top: 48px;
+            position: relative;
+        }
+
+        .medical-icons {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .medical-icon {
+            background: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #2563eb;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .medical-icon:nth-child(1) { animation-delay: 0s; }
+        .medical-icon:nth-child(2) { animation-delay: 0.5s; }
+        .medical-icon:nth-child(3) { animation-delay: 1s; }
+
+        .help-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-top: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .help-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .help-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .help-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            transition: all 0.3s;
+        }
+
+        .help-link:hover {
+            background: #eff6ff;
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .help-icon {
+            width: 24px;
+            height: 24px;
+            color: #2563eb;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 48px 0 24px;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 32px;
+        }
+
+        .footer-brand .nav-brand .logo {
+            background: #2563eb;
+        }
+
+        .footer-brand .brand-name {
+            color: white;
+        }
+
+        .footer-description {
+            color: #9ca3af;
+            margin-top: 16px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-list {
+            list-style: none;
+        }
+
+        .footer-list li {
+            margin-bottom: 8px;
+        }
+
+        .footer-list a {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-list a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-link {
+            background: #374151;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 24px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: #9ca3af;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0, -10px, 0);
+            }
+            70% {
+                transform: translate3d(0, -5px, 0);
+            }
+            90% {
+                transform: translate3d(0, -2px, 0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .error-number {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: white;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 40px;
+                gap: 24px;
+                transition: left 0.3s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px);
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .mobile-menu-toggle.active .hamburger:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px);
+            }
+            
+            .error-section {
+                padding: 100px 0 60px;
+                min-height: calc(100vh - 140px);
+            }
+            
+            .error-number {
+                font-size: 4rem;
+            }
+            
+            .error-title {
+                font-size: 1.75rem;
+            }
+            
+            .error-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                justify-content: center;
+                margin-right: 0;
+                margin-bottom: 16px;
+            }
+            
+            .medical-icons {
+                gap: 16px;
+            }
+            
+            .medical-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            
+            .help-section {
+                padding: 24px;
+            }
+            
+            .help-links {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .error-number {
+                font-size: 3rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .error-subtitle {
+                font-size: 1rem;
+            }
+            
+            .error-description {
+                font-size: 0.875rem;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                padding: 14px 24px;
+                font-size: 1rem;
+            }
+            
+            .medical-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .help-section {
+                padding: 20px;
+                margin-top: 24px;
+            }
+            
+            .help-title {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .error-number {
+                font-size: 2.5rem;
+            }
+            
+            .error-title {
+                font-size: 1.25rem;
+            }
+            
+            .medical-icons {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                padding: 12px 20px;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* High DPI screens */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .error-number {
+                text-rendering: optimizeLegibility;
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .error-section {
+                padding: 100px 0 40px;
+                min-height: calc(100vh - 80px);
+            }
+            
+            .error-number {
+                font-size: 3rem;
+                margin-bottom: 16px;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+                margin-bottom: 12px;
+            }
+            
+            .error-subtitle {
+                font-size: 1rem;
+                margin-bottom: 24px;
+            }
+            
+            .error-description {
+                margin-bottom: 32px;
+            }
+            
+            .help-section {
+                margin-top: 24px;
+                padding: 20px;
+            }
+            
+            .medical-icons {
+                margin-bottom: 20px;
+                gap: 16px;
+            }
+            
+            .medical-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .header,
+            .footer,
+            .btn-primary,
+            .btn-secondary {
+                display: none;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .error-section {
+                padding: 20px 0;
+                min-height: auto;
+            }
+            
+            .error-number {
+                color: #000;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Focus styles for accessibility */
+        .btn-primary:focus,
+        .btn-secondary:focus,
+        .nav-link:focus,
+        .help-link:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            .error-number,
+            .medical-icon {
+                animation: none;
+            }
+            
+            .btn-primary,
+            .btn-secondary,
+            .help-link {
+                transition: none;
+            }
+        }
+    </style>
+
+    <!-- 404 Error Section -->
+    <section class="error-section">
+        <div class="container">
+            <div class="error-content">
+                <div class="error-number">404</div>
+                <h1 class="error-title">Oops! Page Not Found</h1>
+                <p class="error-subtitle">We couldn't find the page you're looking for</p>
+                <p class="error-description">
+                    The page might have been moved, deleted, or you entered the wrong URL. 
+                    But don't worry, our doctors are still available to help you!
+                </p>
+                
+                <div class="error-actions">
+                    <a href="{% url 'home' %}" class="btn-primary">
+                        <i class="fas fa-home"></i>
+                        Go to Homepage
+                    </a>
+                    <a href="{% url 'doctors' %}" class="btn-secondary">
+                        <i class="fas fa-user-md"></i>
+                        Find a Doctor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Header background change on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 50) {
+                header.style.background = 'rgba(255, 255, 255, 0.98)';
+                header.style.backdropFilter = 'blur(15px)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.backdropFilter = 'blur(10px)';
+            }
+        });
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add hover effects to medical icons
+            const medicalIcons = document.querySelectorAll('.medical-icon');
+            medicalIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', () => {
+                    icon.style.transform = 'scale(1.1)';
+                    icon.style.boxShadow = '0 15px 35px rgba(37, 99, 235, 0.3)';
+                });
+                
+                icon.addEventListener('mouseleave', () => {
+                    icon.style.transform = 'scale(1)';
+                    icon.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+                });
+            });
+
+            // Add click tracking for analytics (if needed)
+            const errorButtons = document.querySelectorAll('.btn-primary, .btn-secondary');
+            errorButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    // Track 404 page interactions
+                    console.log('404 page button clicked:', e.target.textContent.trim());
+                });
+            });
+
+            // Add keyboard navigation support
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    navMenu.classList.remove('active');
+                    mobileMenuToggle.classList.remove('active');
+                }
+            });
+        });
+
+        // Prevent animations on page load if user prefers reduced motion
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.setProperty('--animation-duration', '0s');
+        }
+
+        // Add resize handler for responsive adjustments
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                navMenu.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+    </script>
+
+{% endblock %}
